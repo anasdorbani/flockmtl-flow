@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "name": "Alice Johnson",
+    "position": "Software Engineer",
+    "department": "IT",
+    "salary": 85000,
+    "experience_years": 5,
+    "education": "Master's in Computer Science",
+    "location": "New York",
+    "performance_rating": 4.5,
+    "last_promotion_year": 2022,
+    "skills": ["Python", "Java", "Cloud Computing"],
+    "bio": "Alice is a highly skilled software engineer with expertise in backend development and cloud solutions."
+  },
+  {
+    "id": 2,
+    "name": "Bob Smith",
+    "position": "Data Scientist",
+    "department": "AI",
+    "salary": 95000,
+    "experience_years": 6,
+    "education": "PhD in Data Science",
+    "location": "San Francisco",
+    "performance_rating": 4.7,
+    "last_promotion_year": 2021,
+    "skills": ["Machine Learning", "Deep Learning", "Python"],
+    "bio": "Bob specializes in AI models and data-driven decision-making, with a passion for solving complex problems."
+  },
+  {
+    "id": 3,
+    "name": "Charlie Brown",
+    "position": "HR Manager",
+    "department": "HR",
+    "salary": 70000,
+    "experience_years": 8,
+    "education": "MBA in Human Resources",
+    "location": "Chicago",
+    "performance_rating": 4.3,
+    "last_promotion_year": 2020,
+    "skills": ["Employee Relations", "Recruiting", "Conflict Resolution"],
+    "bio": "Charlie is an empathetic HR professional who excels in fostering a positive workplace culture."
+  },
+  {
+    "id": 4,
+    "name": "David Lee",
+    "position": "Product Manager",
+    "department": "Product",
+    "salary": 105000,
+    "experience_years": 7,
+    "education": "MBA in Product Management",
+    "location": "Los Angeles",
+    "performance_rating": 4.6,
+    "last_promotion_year": 2021,
+    "skills": ["Agile Methodologies", "User Research", "Roadmap Planning"],
+    "bio": "David is a strategic thinker who drives product vision and execution with a customer-first approach."
+  },
+  {
+    "id": 5,
+    "name": "Eve Black",
+    "position": "Marketing Specialist",
+    "department": "Marketing",
+    "salary": 65000,
+    "experience_years": 4,
+    "education": "Bachelor's in Marketing",
+    "location": "Miami",
+    "performance_rating": 4.2,
+    "last_promotion_year": 2023,
+    "skills": ["SEO", "Content Strategy", "Social Media Marketing"],
+    "bio": "Eve is a creative marketer who crafts compelling campaigns that drive brand awareness and engagement."
+  }
+]
