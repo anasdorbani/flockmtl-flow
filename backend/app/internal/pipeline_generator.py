@@ -1,9 +1,11 @@
 import openai
 import json
+import time
 
 from app.internal.database import conn
 from app.dependencies import openai
 from app.internal.database import get_table_schema
+from app.internal.templates import SYSTEM_GENERATION_PROMPT, SYSTEM_TABLE_SELECTION, SYSTEM_PIPELINE_GENERATION, SYSTEM_PIPELINE_RUNNING
 
 class PipelineGenerator:
     def __init__(self):
@@ -12,146 +14,153 @@ class PipelineGenerator:
         """
         self.openai = openai
         self.conn = conn
-        self.table_schema = get_table_schema("employees")
 
-    def expand_prompt(self, prompt: str):
-        """
-        Generates alternative prompt variations using OpenAI.
-        """
+    def fetch_table_names(self):
+        table_names = self.conn.execute("""
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_name NOT LIKE 'FLOCKMTL%';
+        """).fetchall()
+        
+        table_names = [table_name[0] for table_name in table_names]
+        
+        return table_names
+    
+    def fetch_table_schema(self, table_name: str):
+        table_schema = self.conn.execute("""
+            SELECT column_name, data_type
+            FROM information_schema.columns
+            WHERE table_name = ?;
+        """, (table_name,)).fetchall()
+        
+        return table_schema
+    
+    def select_table(self, prompt: str):
+        table_names = self.fetch_table_names()
+
+        table_prompt = SYSTEM_TABLE_SELECTION.format(table_names=table_names)
+
         response = self.openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "Generate three alternative versions of the given query."},
-                {"role": "user", "content": f"""
-Provide alternative ways to phrase: '{prompt}'.
-The output should be a list like this:
-[
-    "Alternative 1",
-    "Alternative 2",
-    ...
-]
-
-"""}
+                {"role": "system", "content": table_prompt},
+                {"role": "user", "content": prompt}
             ]
         )
-        return eval(response.choices[0].message.content)
 
-    def generate_data_filtering_query(self, prompt: str, prompt_expansion: list):
-        """
-        Generates an SQL query to filter data based on the prompt.
-        """
+        return response.choices[0].message.content
+    
+    def generate_query(self, prompt: str):
+        
+        table_name = self.select_table(prompt)
+        
+        generation_prompt = SYSTEM_GENERATION_PROMPT.format(table_name=table_name, table_schema=self.fetch_table_schema(table_name))
         response = self.openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "Generate an SQL query to filter data based on a given prompt."},
-                {"role": "user", "content": f"""
-Generate an SQL query for: '{prompt}' using the employees table schema {self.table_schema}.
-
-here's the prompt expansion: {prompt_expansion}
-
-make sure that your are using a simple SQL query that can be executed on any database.
-
-The output should be a json in the next format:
-{{
-    "prompt": "<a new prompt that would directly generate the query>",
-    "query": "<generated query>"
-}}
-"""}
-            ],
-            response_format={"type": "json_object"}
+                {
+                    'role': 'system',
+                    'content': generation_prompt
+                },
+                {
+                    'role': 'user',
+                    'content': prompt
+                }
+            ]   
         )
         
-        return json.loads(response.choices[0].message.content)
+        return response.choices[0].message.content
 
-    def generate_insights_extraction_query(self, prompt: str, prompt_expansion: list, data_filtering_query: dict, raw_data: list):
-        """
-        Generates an SQL query to extract meaningful insights from the filtered data.
-        """
+    def generate_query_pipeline(self, query: str):
+        
         response = self.openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "Generate an SQL query to transform filtered data into insights."},
-                {"role": "user", "content": f"""
-Generate an insights SQL query for: '{prompt}'  using the employees table schema {self.table_schema}.
-
-here's the prompt expansion: {prompt_expansion}
-
-here's the data filtering query: {data_filtering_query}
-
-here's the raw data: {raw_data}
-
-make sure that the new prompt is different from all the previous ones.
-
-make sure that your are using a simple SQL query that can be executed on any database.
-
-The output should be a json in the next format:
-{{
-    "prompt": "<a new prompt that would directly generate the query>",
-    "query": "<generated query>"
-}}
-"""}
+                {
+                    'role': 'system',
+                    'content': SYSTEM_PIPELINE_GENERATION
+                },
+                {
+                    'role': 'user',
+                    'content': query
+                }
             ],
             response_format={"type": "json_object"}
         )
+
         return json.loads(response.choices[0].message.content)
+
+    def refine_query(self, query: str, pipeline: dict):
+        
+        table_name = self.select_table(query)
+        
+        generation_prompt = SYSTEM_GENERATION_PROMPT.format(table_name=table_name, table_schema=self.fetch_table_schema(table_name))
+        
+        response = self.openai.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    'role': 'system',
+                    'content': generation_prompt
+                },
+                {
+                    'role': 'system',
+                    'content': SYSTEM_PIPELINE_RUNNING.format(pipeline=pipeline, user_query=query)
+                }
+            ]
+        )
+
+        return response.choices[0].message.content
 
     def execute_query(self, query: str):
-        """
-        Executes the given SQL query on the DuckDB database.
-        """
-        try:
-            result = self.conn.execute(query).fetchall()
-            return result
-        except Exception as e:
-            return str(e)
+        results = self.conn.execute(query)
+        
+        rows = results.fetchall()
+        columns = [column[0] for column in results.description]
+        
+        data = [dict(zip(columns, row)) for row in rows]
+        
+        return data
 
-    def generate_final_results(self, prompt: str, insights_extraction_query: dict, data: list):
-        """
-        Generates the final insights table with a summary.
-        """
-        response = self.openai.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "Summarize and format the final results in a structured JSON output."},
-                {"role": "user", "content": f"""Create a structured JSON output for: '{prompt}' based on data {data}.
-The output should be a json in the next format:
-
-{{
-    "summary": "<summary of the insights in plain text>",
-}}
-"""}
-            ],
-            response_format={"type": "json_object"}
-        )
-        results = json.loads(response.choices[0].message.content)
-        results["data"] = data
-        return results
-
-    def generate_pipeline(self, prompt: str):
-        """
-        Generates the full pipeline step by step.
-        """
-        print(f"Generating pipeline for prompt: {prompt}")
-        prompt_expansion = self.expand_prompt(prompt)
-        print(f"Prompt expansion: {prompt_expansion}")
-        data_filtering_query = self.generate_data_filtering_query(prompt, prompt_expansion)
-        print(f"Data filtering query: {data_filtering_query}")
-        raw_data = self.execute_query(data_filtering_query["query"])
-        print(raw_data)
-        insights_extraction_query = self.generate_insights_extraction_query(prompt, prompt_expansion, data_filtering_query, raw_data)
-
-        # Execute SQL Queries
-        insights_data = self.execute_query(insights_extraction_query["query"])
-
-        # Generate Final Results
-        final_results = self.generate_final_results(prompt, insights_extraction_query, insights_data)
-
-        pipeline = {
-            "prompt": prompt,
-            "prompt_expansion": prompt_expansion,
-            "data_filtering": data_filtering_query,
-            "insights_extraction": insights_extraction_query,
-            "final_results": final_results
+    def pipeline_generation(self, prompt: str):
+        query = self.generate_query(prompt)
+        t_start = time.time()
+        results = self.execute_query(query)
+        t_end = time.time()
+        pipeline = self.generate_query_pipeline(query)
+        return {
+            'prompt': prompt,
+            'query': query,
+            'pipeline': 
+                {
+                    'id': 0,
+                    'name': 'Results',
+                    'description': '',
+                    'query_execution_time': t_end - t_start,
+                    'is_function': False,
+                    'params': {},
+                    'data': results,
+                    'children': [pipeline]
+                }
         }
-
-        return pipeline
+        
+    def pipeline_running(self, pipeline: dict, query: str):
+        new_query = self.refine_query(query, pipeline)
+        t_start = time.time()
+        results = self.execute_query(new_query)
+        t_end = time.time()
+        new_pipeline = self.generate_query_pipeline(new_query)
+        return {
+            'query': new_query,
+            'pipeline': 
+                {
+                    'id': 0,
+                    'name': 'Results',
+                    'description': '',
+                    'query_execution_time': t_end - t_start,
+                    'is_function': False,
+                    'params': {},
+                    'data': results,
+                    'children': [new_pipeline]
+                }
+        }

@@ -6,19 +6,21 @@ import Image from 'next/image';
 import NodesView from "@/_components/NodesView";
 import AskBar from "@/_components/AskBar";
 import axios from "axios";
-import { Pipeline } from "../../types/pipeline";
+import { Pipeline } from "@/../types/pipeline";
 import LoadingAnimation from "@/_components/LoadingAnimation";
 import HeroSection from "@/_components/HeroSection";
 
 export default function Home() {
   const [pipelineData, setPipelineData] = useState<Pipeline>({
-    prompt: "",
-    prompt_expansion: [],
-    data_filtering: { prompt: "", query: "" },
-    insights_extraction: { prompt: "", query: "" },
-    final_results: { data: {}, summary: "" },
+    id: 0,
+    name: "",
+    description: "",
+    is_function: false,
+    params: {},
+    children: [],
   });
   const [isPipelineReady, setIsPipelineReady] = useState(false);
+  const [query, setQuery] = useState('');
 
   const [isGeneratingPipeline, setIsGeneratingPipeline] = useState(false);
 
@@ -27,7 +29,8 @@ export default function Home() {
     setIsPipelineReady(false);
     return axios.post('/api/generate-pipeline', { prompt })
       .then((response) => {
-        setPipelineData(response.data);
+        setQuery(response.data.query);
+        setPipelineData(response.data.pipeline);
         setIsPipelineReady(true);
         setIsGeneratingPipeline(false);
       })
@@ -52,7 +55,7 @@ export default function Home() {
       >
         <div className="font-bold text-xl flex gap-2 items-center cursor-pointer" onClick={handleClearPipeline}>
           <Image src="/flockmtl-square-logo.svg" alt="FlockMTL" width={32} height={32} />
-          FlockMTL Flow
+          FlockMTL
         </div>
       </Header>
       <Content className="px-16 pt-8 flex items-center justify-center" style={{
@@ -61,7 +64,7 @@ export default function Home() {
         backgroundColor: '#ffffff',
       }}>
         {isPipelineReady ? (
-          <NodesView initialPipeline={pipelineData} handleClearPipeline={handleClearPipeline} />
+          <NodesView pipeline={pipelineData} query={query} setQuery={setQuery} setPipeline={setPipelineData} handleClearPipeline={handleClearPipeline} />
         ) : (
 
           isGeneratingPipeline ? (

@@ -1,84 +1,60 @@
-
-import UserPrompt from './UserPrompt';
-import PromptExpansion from './PromptExpansion';
-import DataFiltering from './DataFiltering';
-import InsightsExtraction from './InsightsExtraction';
-import FinalResults from './FinalResults';
 import { Position } from '@xyflow/react';
-import { Pipeline } from '../../types/pipeline';
+import { Operator, Pipeline } from '@/../types/pipeline';
+import ScalarFunctionNode from './ScalarFunctionNode';
+import OperatorNode from './OperatorNode';
+import ResultsNode from './ResultsNode';
 
-export function BuildNodesAndEdges(pipeline: Pipeline, setPipeline: any) {
+export function BuildNodesAndEdges(pipeline: Pipeline, handleInputChange: (operatorId: number, field: string, value: any, type?: string) => void) {
+  const nodes: any[] = [];
+  const edges: any[] = [];
+  const positionX = 250;
+  const positionY = 0;
 
-  const Nodes = [
-    {
-      id: "1",
-      position: { x: 0, y: 0 },
-      data: {
-        label: <UserPrompt prompt={pipeline.prompt} setPrompt={(prompt: string) => setPipeline({ ...pipeline, prompt })} />,
-      },
-      type: "input",
-      sourcePosition: Position.Right,
-    },
-    {
-      id: "2",
-      position: { x: 250, y: 0 },
-      data: {
-        label: (
-          <PromptExpansion
-            prompts={pipeline.prompt_expansion}
-            setPrompts={(prompts: string[]) => setPipeline({ ...pipeline, prompt_expansion: prompts })}
-          />
-        ),
-      },
+  const createNode = (operator: Operator, positionX: number, positionY: number) => {
+    return {
+      id: `${operator.id + 1}`,
+      position: { x: positionX, y: positionY },
       sourcePosition: Position.Right,
       targetPosition: Position.Left,
-    },
-    {
-      id: "3",
-      position: { x: 500, y: 0 },
       data: {
-        label: (
-          <DataFiltering
-            prompt={pipeline.data_filtering.prompt}
-            query={pipeline.data_filtering.query}
-            setFilteringData={(prompt: string, query: string) => setPipeline({ ...pipeline, data_filtering: { prompt, query } })}
-          />
-        ),
+        label: operator.is_function ?
+          (
+            <ScalarFunctionNode operator={operator} handlePipelineInputChange={handleInputChange} />
+          ) : operator.data ?
+            (
+              <ResultsNode operator={operator} />
+            ) :
+            (
+              <OperatorNode operator={operator} />
+            ),
       },
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-    },
-    {
-      id: "4",
-      position: { x: 750, y: 0 },
-      data: {
-        label: (
-          <InsightsExtraction
-            prompt={pipeline.insights_extraction.prompt}
-            query={pipeline.insights_extraction.query}
-            setInsightsExtractionData={(prompt: string, query: string) => setPipeline({ ...pipeline, insights_extraction: { prompt, query } })}
-          />
-        ),
-      },
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-    },
-    {
-      id: "5",
-      position: { x: 1000, y: 0 },
-      data: {
-        label: <FinalResults results={pipeline.final_results} />,
-      },
-      targetPosition: Position.Left,
-      type: "output",
-    },
-  ];
-  const Edges = [
-    { id: "e1-2", source: "1", target: "2", animated: true },
-    { id: "e2-3", source: "2", target: "3", animated: true },
-    { id: "e3-4", source: "3", target: "4", animated: true },
-    { id: "e4-5", source: "4", target: "5", animated: true },
-  ];
-  return { Nodes, Edges };
+    }
+  };
 
+  const processPipeline = (currentOperator: Operator, positionX: number, positionY: number) => {
+    nodes.push(createNode(currentOperator, positionX, positionY));
+
+    if (currentOperator.children && currentOperator.children.length > 0) {
+      const numberOfChildren = currentOperator.children.length;
+      let tanslationIndex = (numberOfChildren - 1) / 2;
+      const translationConstant = 250;
+
+      let childX = positionX + 250;
+      let childY = positionY + tanslationIndex * translationConstant;
+      currentOperator.children.forEach((child: Operator) => {
+        edges.push({
+          id: `e${currentOperator.id + 1}-${child.id + 1}`,
+          source: `${currentOperator.id + 1}`,
+          target: `${child.id + 1}`,
+          animated: true
+        });
+        processPipeline(child, childX, childY);
+        childY -= translationConstant;
+      });
+    }
+  };
+
+  processPipeline(pipeline, positionX, positionY);
+
+  return { Nodes: nodes, Edges: edges };
 }

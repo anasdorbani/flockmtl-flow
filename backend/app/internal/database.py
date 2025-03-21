@@ -4,6 +4,12 @@ import json
 # Connect to a physical DuckDB database file
 conn = duckdb.connect(database=":memory:", read_only=False)
 
+# Install FlockMTL extension
+conn.execute("""
+    INSTALL flockmtl FROM community;
+    LOAD flockmtl;
+""")
+
 # Create the updated employees table with new schema
 conn.execute("""
     CREATE TABLE IF NOT EXISTS employees (

@@ -13,10 +13,21 @@ interface FinalResults {
   summary: string;
 }
 
-export interface Pipeline {
-  prompt: string;
-  prompt_expansion: string[];
-  data_filtering: DataFiltering;
-  insights_extraction: InsightsExtraction;
-  final_results: FinalResults;
+export interface Operator {
+  id: number
+  name: string;
+  description: string;
+  query_execution_time?: number;
+  is_function: boolean;
+  params?: {
+    model_name: string;
+    prompt: string;
+    input_columns: string[];
+    batch_size?: number;
+    tuple_format?: string;
+  } | {};
+  children: Operator[];
+  data?: object;
 }
+
+export type Pipeline = Operator;

@@ -1,47 +1,77 @@
-import type { Pipeline } from "../../../../types/pipeline";
+import type { Pipeline } from "@/../types/pipeline";
 
-export const pipeline: Pipeline = {
-  prompt:
-    "Give me a full table summarizing the progress of our company during the last 3 years.",
-  prompt_expansion: [
-    "Provide a comprehensive summary of our company's growth over the last three years.",
-    "Summarize the company's performance metrics from the past three years.",
-    "Detail our company's annual progress and milestones.",
+export const demoPipeline: Pipeline = {
+  id: 0,
+  name: "Results",
+  description: "",
+  query_execution_time: 0,
+  is_function: false,
+  params: {},
+  data: [
+    {
+      id: 1,
+      name: "Alice",
+      email: "alice@example.com",
+      score: 95,
+      metadata: { city: "New York", verified: true },
+    },
+    {
+      id: 2,
+      name: "Bob",
+      email: "bob@example.com",
+      score: 87,
+      metadata: { city: "San Francisco", verified: false },
+    },
+    {
+      id: 3,
+      name: "Charlie",
+      email: "charlie@example.com",
+      score: 78,
+      metadata: { city: "Los Angeles", verified: true },
+    },
   ],
-  data_filtering: {
-    prompt:
-      "Give me a full table summarizing the progress of our company during the last 3 years.",
-    query:
-      "SELECT year, SUM(revenue) AS total_revenue, COUNT(DISTINCT customer_id) AS total_customers FROM sales INNER JOIN customers ON sales.customer_id = customers.id WHERE year >= 2021 GROUP BY year ORDER BY year DESC;",
-  },
-  insights_extraction: {
-    prompt:
-      "Give me a full table summarizing the progress of our company during the last 3 years.",
-    query:
-      "WITH revenue_data AS (SELECT year, SUM(revenue) AS yearly_revenue FROM sales WHERE year >= 2021 GROUP BY year), customer_data AS (SELECT year, COUNT(DISTINCT customer_id) AS customer_count FROM sales GROUP BY year) SELECT rd.year, rd.yearly_revenue, cd.customer_count, (rd.yearly_revenue / LAG(rd.yearly_revenue) OVER (ORDER BY rd.year)) * 100 AS revenue_growth_percentage FROM revenue_data rd JOIN customer_data cd ON rd.year = cd.year ORDER BY rd.year DESC;",
-  },
-  final_results: {
-    data: [
-      {
-        year: 2021,
-        revenue: "$2,500,000",
-        customer_growth: "15%",
-        employee_satisfaction: "85%",
-      },
-      {
-        year: 2022,
-        revenue: "$3,200,000",
-        customer_growth: "20%",
-        employee_satisfaction: "90%",
-      },
-      {
-        year: 2023,
-        revenue: "$4,000,000",
-        customer_growth: "25%",
-        employee_satisfaction: "92%",
-      },
-    ],
-    summary:
-      "Over the last three years, the company has experienced consistent revenue growth, increased customer acquisition, and improved employee satisfaction metrics.",
-  },
+  children: [
+    {
+      id: 1,
+      name: "Sink",
+      description: "Final operator that materializes the result of the query.",
+      is_function: false,
+      params: {},
+      children: [
+        {
+          id: 2,
+          name: "LLM_Complete",
+          description:
+            "Generates summaries for each employee based on their details.",
+          is_function: true,
+          params: {
+            model_name: "gpt-4o-mini",
+            prompt:
+              "Provide a summary for each employee based on their details.",
+            input_columns: ["id", "name", "position"],
+            batch_size: 10,
+            tuple_format: "JSON",
+          },
+          children: [
+            {
+              id: 3,
+              name: "Scan",
+              description: "Reads data from the employees table.",
+              is_function: false,
+              params: {},
+              children: [],
+            },
+          ],
+        },
+        {
+          id: 4,
+          name: "Scan",
+          description: "Reads data from the employees table.",
+          is_function: false,
+          params: {},
+          children: [],
+        },
+      ],
+    },
+  ],
 };
