@@ -1,0 +1,47 @@
+Given the following SQL query, generate a detailed JSON representation of its physical execution plan. The execution plan should follow this structure:
+
+```json
+{
+  "name": "Operator name",
+  "description": "Brief explanation of the operator's purpose",
+  "params": {
+    "key1": "value1",
+    "key2": "value2",
+    ...
+  },
+  "children": [
+    {
+      "name": "Child operator name",
+      "description": "Brief explanation of the child operator's purpose",
+      "params": {
+        "key1": "value1",
+        "key2": "value2",
+        ...
+      },
+      "children": [...]
+    },
+    ...
+  ]
+}
+```
+
+The **root operator** should be the **sink**, which is the final operator that materializes the result of the query. Each operator in the execution plan should have the following attributes:
+
+- **name**: The name of the operator (e.g., `Scan`, `Projection`, etc.).
+- **description**: A brief explanation of what the operator does.
+- **params**: The parameters the operator works with (e.g., the columns it accesses, function parameters, etc.).
+- **children**: The operators that are processed before this operator (if any).
+
+The flow of data should go from the initial scan of the table through intermediate operators and end in the final materialization of the result.
+
+Here is the SQL query you should analyze:
+
+```sql
+SELECT id, title, abstract, content, 
+       llm_complete( {'model_name': 'gpt-4o', 'secret_name': 'high_rate'}, 
+                     {'prompt': 'Analyze the following research paper details (title, abstract, and content) and extract the global theme of the paper in a concise few words.'}, 
+                     {'title': title, 'abstract': abstract, 'content': content} ) AS theme 
+FROM research_paper
+```
+
+Please provide the physical execution plan in the specified JSON format.

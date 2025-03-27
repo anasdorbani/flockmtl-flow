@@ -1,15 +1,17 @@
-import type { Pipeline } from "../../../../types/pipeline";
 import axios from "axios";
-import { demoPipeline } from "../generate-pipeline/demo-pipeline";
+import type { Pipeline } from "@/../types/pipeline";
+import { demoPipeline } from "./demo-pipeline";
 
 export async function POST(request: Request): Promise<Response> {
-  const { pipeline, query }: { pipeline: Pipeline, query: string } = await request.json();
-  console.log(JSON.stringify(pipeline));
+  const { prompt, table }: { prompt: string, table: any[] } = await request.json();
+
+  // await new Promise((resolve) => setTimeout(resolve, 3000));
+  console.log(table)
   const response = await axios.post(
-    "http://localhost:8000/pipeline/pipeline-running",
+    "http://localhost:8000/generate-plot-config",
     {
-      pipeline,
-      query
+      prompt,
+      table: table,
     },
     {
       headers: {
@@ -24,6 +26,6 @@ export async function POST(request: Request): Promise<Response> {
   });
 
   return new Response(JSON.stringify({ pipeline: demoPipeline, query: 'test' }), {
-      headers: { "Content-Type": "application/json" },
-    });
+    headers: { "Content-Type": "application/json" },
+  });
 }

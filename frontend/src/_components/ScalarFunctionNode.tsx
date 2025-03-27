@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
-import { Input, Select, InputNumber, Tag } from "antd";
+import { Input, Select, InputNumber, Tag, Button } from "antd";
 import { MdOutlineInsights } from "react-icons/md";
 import NodeBox from "./NodeBox";
 import type { Operator } from "../../types/pipeline";
+import MetaPromptModal from "./MetaPromptModal";
+import { CiEdit } from "react-icons/ci";
 
 const { TextArea } = Input;
 
@@ -14,6 +16,7 @@ interface ScalarFunctionNodeProps {
 
 const ScalarFunctionNode: React.FC<ScalarFunctionNodeProps> = ({ operator, handlePipelineInputChange }) => {
     const [tags, setTags] = useState<string[]>(operator.params?.input_columns || []);
+    const [edited, setEdited] = useState(false);
 
     // For adding new tags (input columns)
     const [inputVisible, setInputVisible] = useState(false);
@@ -48,41 +51,61 @@ const ScalarFunctionNode: React.FC<ScalarFunctionNodeProps> = ({ operator, handl
         setInputValue("");
     };
 
+    const handleFunctionInputChange = (field: string, value: any) => {
+        setEdited(true);
+        handlePipelineInputChange(operator.id, field, value);
+    };
+
     return (
         <NodeBox Icon={MdOutlineInsights} IconColor="bg-orange-400" Title="FlockMTL Function">
             <div className="flex flex-col gap-3 text-xs p-2">
+                {edited && (
+                    <div className="absolute text-right text-xs text-gray-500 right-4 flex items-center">
+                        <CiEdit className="inline mr-1" />
+                        Edited
+                    </div>
+                )}
                 {/* Name (Static) */}
                 <div>
                     <label className="font-semibold text-gray-700">Name</label>
                     <p className="text-gray-600">{operator.name}</p>
                 </div>
 
+                {/* Description */}
+                <div>
+                    <label className="font-semibold text-gray-700">Description</label>
+                    <p className="text-gray-600">{operator.description}</p>
+                </div>
+
                 {/* Model Name */}
                 <div>
-                    <label className="font-semibold text-gray-700">Model Name</label>
+                    <label className="font-semibold text-gray-700">Model</label>
                     <Input
                         name="model_name"
                         defaultValue={operator.params?.model_name}
-                        onChange={(e) => handlePipelineInputChange(operator.id, "model_name", e.target.value)}
+                        onChange={(e) => handleFunctionInputChange("model_name", e.target.value)}
                         className="text-xs"
                     />
                 </div>
 
                 {/* Prompt */}
                 <div>
-                    <label className="font-semibold text-gray-700">Prompt</label>
+                    <label className="font-semibold text-gray-700 flex justify-between items-center block mb-2">
+                        Prompt
+                        <MetaPromptModal prompt={operator.params?.prompt} />
+                    </label>
                     <TextArea
                         name="prompt"
                         defaultValue={operator.params?.prompt}
                         autoSize={{ minRows: 2, maxRows: 4 }}
-                        onChange={(e) => handlePipelineInputChange(operator.id, "prompt", e.target.value)}
+                        onChange={(e) => handleFunctionInputChange("prompt", e.target.value)}
                         className="text-xs"
                     />
                 </div>
 
                 {/* Input Columns (Tag System) */}
                 <div>
-                    <label className="font-semibold text-gray-700">Input Columns</label>
+                    <label className="font-semibold text-gray-700">Relevant Columns</label>
                     <div className="flex flex-wrap gap-2 border border-gray-300 p-2 rounded-md">
                         {tags.map((tag) => (
                             <Tag key={tag} closable onClose={() => handleClose(tag)}>
@@ -116,17 +139,17 @@ const ScalarFunctionNode: React.FC<ScalarFunctionNodeProps> = ({ operator, handl
                         min={1}
                         className="w-full text-xs"
                         placeholder="Auto"
-                        onChange={(value) => handlePipelineInputChange(operator.id, "batch_size", value, "number")}
+                        onChange={(value) => handleFunctionInputChange("batch_size", value)}
                     />
                 </div>
 
                 {/* Tuple Format */}
                 <div>
-                    <label className="font-semibold text-gray-700">Tuple Format</label>
+                    <label className="font-semibold text-gray-700">Tuple Serialization</label>
                     <Select
                         defaultValue={operator.params?.tuple_format ?? 'XML'}
                         className="w-full text-xs"
-                        onChange={(value) => handlePipelineInputChange(operator.id, "tuple_format", value)}
+                        onChange={(value) => handleFunctionInputChange("tuple_format", value)}
                         options={[
                             { value: "Markdown", label: "Markdown" },
                             { value: "XML", label: "XML" },

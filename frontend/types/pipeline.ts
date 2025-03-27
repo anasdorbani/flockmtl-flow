@@ -17,7 +17,9 @@ export interface Operator {
   id: number
   name: string;
   description: string;
-  query_execution_time?: number;
+  metrics?: {
+    execution_time: number;
+  };
   is_function: boolean;
   params?: {
     model_name: string;

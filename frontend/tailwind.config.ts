@@ -8,5 +8,5 @@ export default {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {},
-  plugins: [],
+  plugins: [require("@tailwindcss/typography")],
 } satisfies Config;

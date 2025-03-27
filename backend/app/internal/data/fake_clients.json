@@ -1,0 +1,282 @@
+[
+  {
+    "client_id": 1,
+    "client_name": "Tech Innovators Inc.",
+    "industry": "Technology",
+    "location": "San Francisco, CA",
+    "account_manager": "Alice Johnson",
+    "status": "Active"
+  },
+  {
+    "client_id": 2,
+    "client_name": "Green Solutions Ltd.",
+    "industry": "Environmental",
+    "location": "Austin, TX",
+    "account_manager": "Bob Smith",
+    "status": "Inactive"
+  },
+  {
+    "client_id": 3,
+    "client_name": "AutoTech Motors",
+    "industry": "Automotive",
+    "location": "Detroit, MI",
+    "account_manager": "Charlie Brown",
+    "status": "Active"
+  },
+  {
+    "client_id": 4,
+    "client_name": "HealthPlus Pharmaceuticals",
+    "industry": "Healthcare",
+    "location": "New York, NY",
+    "account_manager": "Emma White",
+    "status": "Active"
+  },
+  {
+    "client_id": 5,
+    "client_name": "Fashion Forward Co.",
+    "industry": "Fashion",
+    "location": "Los Angeles, CA",
+    "account_manager": "Frank Green",
+    "status": "Inactive"
+  },
+  {
+    "client_id": 6,
+    "client_name": "Global Logistics Group",
+    "industry": "Logistics",
+    "location": "Chicago, IL",
+    "account_manager": "Grace Black",
+    "status": "Active"
+  },
+  {
+    "client_id": 7,
+    "client_name": "NextGen Enterprises",
+    "industry": "Technology",
+    "location": "Seattle, WA",
+    "account_manager": "Hannah Gray",
+    "status": "Active"
+  },
+  {
+    "client_id": 8,
+    "client_name": "EcoEnergy Solutions",
+    "industry": "Energy",
+    "location": "Denver, CO",
+    "account_manager": "Ian Clark",
+    "status": "Inactive"
+  },
+  {
+    "client_id": 9,
+    "client_name": "Creative Minds Studio",
+    "industry": "Entertainment",
+    "location": "Los Angeles, CA",
+    "account_manager": "Jackie Adams",
+    "status": "Active"
+  },
+  {
+    "client_id": 10,
+    "client_name": "FutureTech Software",
+    "industry": "Software",
+    "location": "Boston, MA",
+    "account_manager": "Ken Harris",
+    "status": "Inactive"
+  },
+  {
+    "client_id": 11,
+    "client_name": "Smart Manufacturing Ltd.",
+    "industry": "Manufacturing",
+    "location": "Cleveland, OH",
+    "account_manager": "Lilly Carter",
+    "status": "Active"
+  },
+  {
+    "client_id": 12,
+    "client_name": "Solar Tech Solutions",
+    "industry": "Energy",
+    "location": "San Diego, CA",
+    "account_manager": "Mark King",
+    "status": "Active"
+  },
+  {
+    "client_id": 13,
+    "client_name": "Urban Developers",
+    "industry": "Real Estate",
+    "location": "Miami, FL",
+    "account_manager": "Nancy Wright",
+    "status": "Inactive"
+  },
+  {
+    "client_id": 14,
+    "client_name": "Streamline Technologies",
+    "industry": "Technology",
+    "location": "New York, NY",
+    "account_manager": "Oscar Martinez",
+    "status": "Active"
+  },
+  {
+    "client_id": 15,
+    "client_name": "Bright Future Education",
+    "industry": "Education",
+    "location": "Phoenix, AZ",
+    "account_manager": "Paul Green",
+    "status": "Active"
+  },
+  {
+    "client_id": 16,
+    "client_name": "Global Fashion Hub",
+    "industry": "Fashion",
+    "location": "Paris, France",
+    "account_manager": "Quincy Evans",
+    "status": "Inactive"
+  },
+  {
+    "client_id": 17,
+    "client_name": "InnoMed Healthcare",
+    "industry": "Healthcare",
+    "location": "Houston, TX",
+    "account_manager": "Rachel Cooper",
+    "status": "Active"
+  },
+  {
+    "client_id": 18,
+    "client_name": "TechSavvy Solutions",
+    "industry": "Technology",
+    "location": "Austin, TX",
+    "account_manager": "Steven Johnson",
+    "status": "Active"
+  },
+  {
+    "client_id": 19,
+    "client_name": "Luxury Living Homes",
+    "industry": "Real Estate",
+    "location": "Las Vegas, NV",
+    "account_manager": "Ursula Knight",
+    "status": "Inactive"
+  },
+  {
+    "client_id": 20,
+    "client_name": "Rising Sun Ventures",
+    "industry": "Investment",
+    "location": "San Francisco, CA",
+    "account_manager": "Vince Hayes",
+    "status": "Active"
+  },
+  {
+    "client_id": 21,
+    "client_name": "City Solutions",
+    "industry": "Construction",
+    "location": "Dallas, TX",
+    "account_manager": "Wendy Peters",
+    "status": "Active"
+  },
+  {
+    "client_id": 22,
+    "client_name": "Pixel Studios",
+    "industry": "Entertainment",
+    "location": "Chicago, IL",
+    "account_manager": "Xander Scott",
+    "status": "Inactive"
+  },
+  {
+    "client_id": 23,
+    "client_name": "AquaPure Water Solutions",
+    "industry": "Water Treatment",
+    "location": "Atlanta, GA",
+    "account_manager": "Yara Kim",
+    "status": "Active"
+  },
+  {
+    "client_id": 24,
+    "client_name": "NextWave Innovations",
+    "industry": "Technology",
+    "location": "Los Angeles, CA",
+    "account_manager": "Zane Davis",
+    "status": "Inactive"
+  },
+  {
+    "client_id": 25,
+    "client_name": "Alpha Logistics",
+    "industry": "Logistics",
+    "location": "Dallas, TX",
+    "account_manager": "Alice Johnson",
+    "status": "Active"
+  },
+  {
+    "client_id": 26,
+    "client_name": "Fusion Health Group",
+    "industry": "Healthcare",
+    "location": "Boston, MA",
+    "account_manager": "Bob Smith",
+    "status": "Active"
+  },
+  {
+    "client_id": 27,
+    "client_name": "Modern Enterprises",
+    "industry": "Technology",
+    "location": "Seattle, WA",
+    "account_manager": "Charlie Brown",
+    "status": "Inactive"
+  },
+  {
+    "client_id": 28,
+    "client_name": "ProActive Marketing",
+    "industry": "Marketing",
+    "location": "Denver, CO",
+    "account_manager": "Emma White",
+    "status": "Active"
+  },
+  {
+    "client_id": 29,
+    "client_name": "CloudWave Systems",
+    "industry": "Cloud Computing",
+    "location": "San Francisco, CA",
+    "account_manager": "Frank Green",
+    "status": "Active"
+  },
+  {
+    "client_id": 30,
+    "client_name": "Design Innovations",
+    "industry": "Design",
+    "location": "New York, NY",
+    "account_manager": "Grace Black",
+    "status": "Inactive"
+  },
+  {
+    "client_id": 31,
+    "client_name": "ClearWater Solutions",
+    "industry": "Water Treatment",
+    "location": "Portland, OR",
+    "account_manager": "Hannah Gray",
+    "status": "Active"
+  },
+  {
+    "client_id": 32,
+    "client_name": "Visionary Brands",
+    "industry": "Marketing",
+    "location": "Chicago, IL",
+    "account_manager": "Ian Clark",
+    "status": "Active"
+  },
+  {
+    "client_id": 33,
+    "client_name": "Quantum Innovations",
+    "industry": "Technology",
+    "location": "Boston, MA",
+    "account_manager": "Jackie Adams",
+    "status": "Inactive"
+  },
+  {
+    "client_id": 34,
+    "client_name": "Urban Technologies",
+    "industry": "Construction",
+    "location": "Phoenix, AZ",
+    "account_manager": "Ken Harris",
+    "status": "Active"
+  },
+  {
+    "client_id": 35,
+    "client_name": "GigaTech Enterprises",
+    "industry": "Technology",
+    "location": "Austin, TX",
+    "account_manager": "Lilly Carter",
+    "status": "Inactive"
+  }
+]

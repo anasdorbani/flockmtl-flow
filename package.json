@@ -1,0 +1,5 @@
+{
+	"dependencies": {
+		"@ant-design/charts": "^2.2.7"
+	}
+}

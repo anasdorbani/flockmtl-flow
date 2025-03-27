@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Layout } from 'antd';
+import { Layout, Button } from 'antd';
 const { Header, Content, Footer } = Layout;
 import Image from 'next/image';
 import NodesView from "@/_components/NodesView";
@@ -9,6 +9,9 @@ import axios from "axios";
 import { Pipeline } from "@/../types/pipeline";
 import LoadingAnimation from "@/_components/LoadingAnimation";
 import HeroSection from "@/_components/HeroSection";
+import { FaGithub } from "react-icons/fa";
+import { SiGoogledocs } from "react-icons/si";
+import ResponseTableSection from "@/_components/ResponseTableSection";
 
 export default function Home() {
   const [pipelineData, setPipelineData] = useState<Pipeline>({
@@ -19,28 +22,63 @@ export default function Home() {
     params: {},
     children: [],
   });
-  const [isPipelineReady, setIsPipelineReady] = useState(false);
-  const [query, setQuery] = useState('');
+  const [isResponseTableReady, setIsResponseTableReady] = useState(false);
+  const [promptData, setPromptData] = useState({
+    prompt: "",
+    query: "",
+    table: [],
+    execution_time: 0,
+  })
 
-  const [isGeneratingPipeline, setIsGeneratingPipeline] = useState(false);
+  const [isGeneratingResponseTable, setIsGeneratingResponseTable] = useState(false);
+  const [isRegeneratingResponseTable, setIsRegeneratingResponseTable] = useState(false);
+  const [isGeneratingQueryPlan, setIsGeneratingQueryPlan] = useState(false);
+  const [showPlan, setShowPlan] = useState(false);
 
-  const handlePipelineConstruction = async (prompt: string) => {
-    setIsGeneratingPipeline(true);
-    setIsPipelineReady(false);
-    return axios.post('/api/generate-pipeline', { prompt })
+  const generateResponseTable = async (prompt: string) => {
+    setIsGeneratingResponseTable(true);
+    setIsResponseTableReady(false);
+    return axios.post('/api/generate-response-table', { prompt })
       .then((response) => {
-        setQuery(response.data.query);
-        setPipelineData(response.data.pipeline);
-        setIsPipelineReady(true);
-        setIsGeneratingPipeline(false);
+        setPromptData(response.data);
+        setIsGeneratingResponseTable(false);
+        setIsResponseTableReady(true);
       })
       .catch(() => {
-        setIsGeneratingPipeline(false);
+        setIsGeneratingResponseTable(false);
       })
   };
 
+  const regenerateResponseTable = async (prompt: string, query: string) => {
+    setIsRegeneratingResponseTable(true);
+    return axios.post('/api/regenerate-response-table', { prompt, generated_query: query })
+      .then((response) => {
+        setPromptData(response.data);
+        setIsRegeneratingResponseTable(false);
+      })
+      .catch(() => {
+        setIsRegeneratingResponseTable(false);
+      }
+      )
+  };
+
+  const generateQueryPlan = async (query: string) => {
+    setIsGeneratingQueryPlan(true);
+    return axios.post('/api/generate-query-plan', { query })
+      .then((response) => {
+        setPipelineData(response.data.pipeline);
+        setIsGeneratingQueryPlan(false);
+        setShowPlan(true);
+
+        console.log(response.data.pipeline);
+      })
+      .catch(() => {
+        setIsGeneratingQueryPlan(false);
+      })
+  }
+
   const handleClearPipeline = () => {
-    setIsPipelineReady(false);
+    window.location.reload();
   };
 
   return (
@@ -57,30 +95,50 @@ export default function Home() {
           <Image src="/flockmtl-square-logo.svg" alt="FlockMTL" width={32} height={32} />
           FlockMTL
         </div>
+        <div className="flex gap-2">
+          <Button className="rounded-full text-xl" href="#" icon={<FaGithub />} target="_blank" />
+          <Button className="rounded-full font-bold" href="#" icon={<SiGoogledocs />} target="_blank">
+            Docs
+          </Button>
+        </div>
       </Header>
       <Content className="px-16 pt-8 flex items-center justify-center" style={{
-        height: 'calc(100vh - 120px - 192px)',
+        height: `calc(100vh - 120px - 192px)`,
         overflow: 'auto',
         backgroundColor: '#ffffff',
       }}>
-        {isPipelineReady ? (
+        {showPlan ? (
+          <NodesView pipeline={pipelineData} setShowPlan={setShowPlan} promptData={promptData} setPromptData={setPromptData} setPipeline={setPipelineData}   />
+        ) : (
+          isResponseTableReady ? (
+            <ResponseTableSection promptData={promptData} setPromptData={setPromptData} isGeneratingQueryPlan={isGeneratingQueryPlan} isRegeneratingResponseTable={isRegeneratingResponseTable} generateQueryPlan={generateQueryPlan} regenerateResponseTable={regenerateResponseTable} />
+          ) : (
+            isGeneratingResponseTable ? (
+              <LoadingAnimation />
+            ) : (
+              <HeroSection />
+            ))
+        )}
+        {/* {isResponseTableReady ? (
           <NodesView pipeline={pipelineData} query={query} setQuery={setQuery} setPipeline={setPipelineData} handleClearPipeline={handleClearPipeline} />
         ) : (
 
-          isGeneratingPipeline ? (
+          isGeneratingResponseTable ? (
             <LoadingAnimation />
           ) : (
             <HeroSection />
           )
-        )}
+        )} */}
       </Content>
       <Footer className="flex items-end justify-center" style={{
         height: '192px',
         backgroundColor: '#ffffff',
       }}>
-        <div className="md:w-1/2 w-full p-4">
-          <AskBar onSend={handlePipelineConstruction} loading={isGeneratingPipeline} />
-        </div>
+        {!isResponseTableReady && (
+          <div className="md:w-1/2 w-full p-4">
+            <AskBar onSend={generateResponseTable} loading={isGeneratingResponseTable} />
+          </div>
+        )}
       </Footer>
     </Layout>
   );
