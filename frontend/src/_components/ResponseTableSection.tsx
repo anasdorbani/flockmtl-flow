@@ -6,8 +6,11 @@ import { LuSearchCode } from "react-icons/lu";
 import { FaPlay } from "react-icons/fa";
 import axios from 'axios';
 import SQLEditor from './SQLEditor';
+import { Tooltip } from 'antd';
 
+import { TfiClose } from "react-icons/tfi";
 import { Column, Line, Pie } from "@ant-design/charts";
+import { IoCopy } from "react-icons/io5";
 
 interface ResponseTableSectionProps {
     promptData: {
@@ -71,20 +74,40 @@ export default function ResponseTableSection({ promptData, setPromptData, regene
             )
     };
 
+    const copyQueryToClipboard = () => {
+        navigator.clipboard.writeText(inputQuery)
+            .then(() => {
+                console.log('Query copied to clipboard');
+            }
+            )
+            .catch((error) => {
+                console.error('Error copying query to clipboard:', error);
+            }
+            );
+    };
+
 
     return (
         <div className="relative w-full h-full">
 
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Card className='border-2 border-[#f0f0f0] rounded-[40px] max-w-screen-md'>
-                    <div className='absolute flex gap-2 justify-end w-full px-10'>
-                        <Button
-                            icon={<PiBroomBold />}
-                            onClick={() => window.location.reload()}
-                            className='rounded-[40px]'
-                        />
-                        <Button className="rounded-full" loading={isRegeneratingResponseTable} icon={<RiLoopLeftFill />} onClick={() => regenerateResponseTable(promptData.prompt, promptData.query)} />
-                        <Button color='primary' variant='outlined' className="rounded-full" loading={isGeneratingQueryPlan} icon={<LuSearchCode />} onClick={() => generateQueryPlan(promptData.query)} >Inspect</Button>
+                    <div className='flex gap-2 justify-between w-full mb-2'>
+                        <Tooltip title="Close current and start new query" color='#888888' className='font-bold'>
+                            <Button
+                                icon={<TfiClose />}
+                                onClick={() => window.location.reload()}
+                                className='rounded-[40px]'
+                            />
+                        </Tooltip>
+                        <div className='flex gap-2'>
+                            <Tooltip title="Regenerate query" color='#888888' className='font-bold'>
+                                <Button className="rounded-full" loading={isRegeneratingResponseTable} icon={<RiLoopLeftFill />} onClick={() => regenerateResponseTable(promptData.prompt, promptData.query)} />
+                            </Tooltip>
+                            <Tooltip title="Inspect query plan" color='#888888' className='font-bold'>
+                                <Button color='primary' variant='outlined' className="rounded-full" loading={isGeneratingQueryPlan} icon={<LuSearchCode />} onClick={() => generateQueryPlan(promptData.query)} >Inspect</Button>
+                            </Tooltip>
+                        </div>
                     </div>
                     <Space direction="vertical" size="small" style={{ width: '100%' }}>
                         <Typography.Title level={3}>Query Details</Typography.Title>
@@ -92,17 +115,27 @@ export default function ResponseTableSection({ promptData, setPromptData, regene
                             <p><span className='font-bold'>Prompt:</span> {promptData.prompt}</p>
                             <p><span className='font-bold'>Execution Time:</span> {promptData.execution_time} s</p>
                             <div className='relative'>
-                                <Button
-                                    icon={<FaPlay />}
-                                    variant='outlined'
-                                    size='small'
-                                    color='green'
-                                    className='rounded-[40px] absolute top-3 right-3 p-2 z-10 text-xs'
-                                    loading={isRunningQuery}
-                                    onClick={runInputQuery}
-                                >
-                                    Run
-                                </Button>
+                                <div className='absolute top-3 right-3 p-2 z-10 flex gap-2 '>
+                                    <Tooltip title="Run query" color='#888888' className='font-bold'>
+                                        <Button
+                                            icon={<FaPlay />}
+                                            variant='outlined'
+                                            color='green'
+                                            className='rounded-[40px] text-xs'
+                                            loading={isRunningQuery}
+                                            onClick={runInputQuery}
+                                        >
+                                            Run
+                                        </Button>
+                                    </Tooltip>
+                                    <Tooltip title="Copy query" color='#888888' className='font-bold'>
+                                        <Button
+                                        icon={<IoCopy />}
+                                        className='rounded-full text-xs'
+                                        onClick={copyQueryToClipboard}
+                                    />
+                                    </Tooltip>
+                                </div>
                                 <SQLEditor value={inputQuery} onChange={handleQueryChange} /></div>
                         </Typography.Paragraph>
                         {/* <Button onClick={generateVisualization} >Generate Chart</Button>

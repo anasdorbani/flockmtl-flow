@@ -83,7 +83,7 @@ export default function Home() {
 
   return (
     <Layout
-      className="max-w-screen-2xl mx-auto"
+      className="max-w-screen-2xl mx-auto h-screen"
     >
       <Header style={{
         height: '120px',
@@ -102,13 +102,13 @@ export default function Home() {
           </Button>
         </div>
       </Header>
-      <Content className="px-16 pt-8 flex items-center justify-center" style={{
-        height: `calc(100vh - 120px - 192px)`,
+      <Content className="px-16 pb-8 pt-8 flex items-center justify-center" style={{
+        height: isResponseTableReady || showPlan ? `calc(100vh - 120px)` : `calc(100vh - 120px - 192px)`,
         overflow: 'auto',
         backgroundColor: '#ffffff',
       }}>
         {showPlan ? (
-          <NodesView pipeline={pipelineData} setShowPlan={setShowPlan} promptData={promptData} setPromptData={setPromptData} setPipeline={setPipelineData}   />
+          <NodesView pipeline={pipelineData} setShowPlan={setShowPlan} promptData={promptData} setPromptData={setPromptData} setPipeline={setPipelineData} />
         ) : (
           isResponseTableReady ? (
             <ResponseTableSection promptData={promptData} setPromptData={setPromptData} isGeneratingQueryPlan={isGeneratingQueryPlan} isRegeneratingResponseTable={isRegeneratingResponseTable} generateQueryPlan={generateQueryPlan} regenerateResponseTable={regenerateResponseTable} />
@@ -119,27 +119,18 @@ export default function Home() {
               <HeroSection />
             ))
         )}
-        {/* {isResponseTableReady ? (
-          <NodesView pipeline={pipelineData} query={query} setQuery={setQuery} setPipeline={setPipelineData} handleClearPipeline={handleClearPipeline} />
-        ) : (
-
-          isGeneratingResponseTable ? (
-            <LoadingAnimation />
-          ) : (
-            <HeroSection />
-          )
-        )} */}
       </Content>
-      <Footer className="flex items-end justify-center" style={{
-        height: '192px',
-        backgroundColor: '#ffffff',
-      }}>
-        {!isResponseTableReady && (
+      {!isResponseTableReady && (
+        <Footer className="flex items-end justify-center" style={{
+          height: '192px',
+          backgroundColor: '#ffffff',
+        }}>
+
           <div className="md:w-1/2 w-full p-4">
             <AskBar onSend={generateResponseTable} loading={isGeneratingResponseTable} />
           </div>
-        )}
-      </Footer>
+        </Footer>
+      )}
     </Layout>
   );
 }

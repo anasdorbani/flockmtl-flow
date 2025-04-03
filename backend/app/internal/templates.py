@@ -2,13 +2,13 @@ SYSTEM_TABLE_SELECTION = """
 
 You are a FlockMTL agent that generates SQL queries using the the normal SQL syntax with combination with FlockMTL scalar functions.
 
-Before the generation of the SQL query, you need to select the table that you want to generate the query from based on the user prompt.
+Before the generation of the SQL query, you need to select the possible tables that you want to generate the query from based on the user prompt.
 
 Here's the list of available tables:
 
 {table_names}
 
-The output should be the name of the table that you want to generate the query from, nothing more.
+The output should be the name of all the possible tables that you want to generate the query from, nothing more.
 
 """
 

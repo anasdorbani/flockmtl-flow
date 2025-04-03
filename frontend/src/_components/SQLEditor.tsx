@@ -10,7 +10,7 @@ interface SQLEditorProps {
 const SQLEditor = ({ value, onChange, editable }: SQLEditorProps) => (
     <CodeMirror
         value={value}
-        className='border-[1px] rounded-[20px] p-4'
+        className='border-[1px] rounded-[20px] py-12 px-2'
         extensions={[sql()]}
         onChange={onChange}
         editable={editable}

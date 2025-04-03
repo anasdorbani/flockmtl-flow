@@ -27,16 +27,27 @@ class QueryPipelineManager:
         """).fetchall()
         return [table_name[0] for table_name in table_names]
 
-    def fetch_table_schema(self, table_name: str):
+    def fetch_table_schema(self, table_name: list[str]):
         """
         Fetches the schema (columns and data types) of a specific table.
         """
-        table_schema = self.conn.execute("""
-            SELECT column_name, data_type
-            FROM information_schema.columns
-            WHERE table_name = ?;
-        """, (table_name,)).fetchall()
-        return table_schema
+        table_schemas = []
+        for name in table_name:
+            table_schema = self.conn.execute("""
+                SELECT column_name, data_type
+                FROM information_schema.columns
+                WHERE table_name = ?;
+            """, (name,)).fetchall()
+            table_schemas.append({
+                    'table_name': name,
+                    'schema': [
+                        {
+                            'column_name': column[0],
+                            'data_type': column[1]
+                        } for column in table_schema
+                    ]
+                })
+        return table_schemas
 
     def choose_table_based_on_prompt(self, prompt: str):
         """
@@ -52,7 +63,7 @@ class QueryPipelineManager:
             ]
         )
 
-        return response.choices[0].message.content
+        return eval(response.choices[0].message.content)
 
     def generate_sql_query(self, prompt: str):
         """
@@ -213,7 +224,5 @@ class QueryPipelineManager:
             ],
             response_format={"type": "json_object"}
         )
-        
-        print(response.choices[0].message.content)
         
         return json.loads(response.choices[0].message.content)
