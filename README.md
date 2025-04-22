@@ -52,6 +52,7 @@ The Next.js frontend delivers an intuitive user experience:
    ```bash
    uv run fastapi dev
    ```
+   | You should install `uv` project manager from [here](https://docs.astral.sh/uv/getting-started/installation/).
 
 ### Frontend Setup
 
