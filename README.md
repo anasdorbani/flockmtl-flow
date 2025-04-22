@@ -1,68 +1,139 @@
-# FlockMTL Flow
+# 🚀 FlockMTL Flow
 
-This project is built on top of [FlockMTL](https://dsg-polymtl.github.io/flockmtl/), a DuckDB extension for building LLM-powered data applications.
+> **Transform natural language into powerful database queries with an intuitive visual pipeline**
 
-## Project Structure
+FlockMTL Flow is a revolutionary tool built on top of [FlockMTL](https://dsg-polymtl.github.io/flockmtl/), a DuckDB extension for creating LLM-powered data applications. This project bridges the gap between natural language and database queries through an interactive visual interface.
 
-The project is organized into two main components:
+## ✨ Why FlockMTL Flow?
+
+Traditional SQL queries require technical expertise, creating barriers for non-technical users who need to extract insights from data. FlockMTL Flow solves this problem by:
+
+- Converting natural language questions into SQL queries
+- Providing a visual pipeline builder for query construction
+- Delivering semantic analysis of query results
+- Making data exploration accessible to everyone
+
+## 🏗️ Project Architecture
+
+FlockMTL Flow follows a modern, modular architecture:
+
+```
+flockmtl-flow/
+├── 🖥️ frontend/      # Next.js visual interface
+├── ⚙️ backend/       # FastAPI server
+└── 📄 docs/          # Documentation
+```
 
 ### Backend
 
-A FastAPI backend that handles:
-- Query pipeline management
-- Database connections
-- API endpoints for pipeline execution
+The FastAPI backend serves as the engine of FlockMTL Flow:
+
+- **Query Pipeline Management**: Orchestrates the transformation from natural language to SQL
+- **Database Connections**: Interfaces with DuckDB and other data sources
+- **API Endpoints**: Provides RESTful services for pipeline execution
 
 ### Frontend
 
-A Next.js frontend that provides:
-- Interactive UI for building and visualizing query pipelines
-- Components for viewing query responses
-- SQL editor integration
+The Next.js frontend delivers an intuitive user experience:
 
-## Getting Started
+- **Visual Pipeline Builder**: Drag-and-drop interface for creating query flows
+- **Interactive Components**: Real-time visualization of query results
+- **SQL Editor Integration**: Advanced options for technical users
+
+## 🚀 Getting Started
 
 ### Backend Setup
 
 1. Navigate to the backend directory:
-   ```
+   ```bash
    cd backend
    ```
 
 2. Install dependencies:
-   ```
+   ```bash
    pip install -e .
    ```
 
 3. Run the development server:
-   ```
+   ```bash
    uvicorn app.main:app --reload
    ```
 
 ### Frontend Setup
 
 1. Navigate to the frontend directory:
-   ```
+   ```bash
    cd frontend
    ```
 
 2. Install dependencies:
-   ```
+   ```bash
    pnpm install
    ```
 
 3. Run the development server:
-   ```
+   ```bash
    pnpm dev
    ```
 
-## Features
+4. Open your browser to `http://localhost:3000`
 
-- Visual pipeline builder for query construction
-- Interactive nodes for different pipeline operations
-- Real-time query execution and refinement
-- Integration with SQL and data visualization tools
+## 🔎 Key Features
 
-## License
+### Natural Language to SQL (NL2SQL)
+
+FlockMTL Flow uses advanced LLM capabilities to:
+- Parse natural language questions
+- Generate appropriate SQL queries
+- Validate query correctness
+- Execute queries against your database
+
+### Interactive Pipeline Building
+
+- **Drag-and-Drop Nodes**: Easily construct complex query pipelines
+- **Real-Time Feedback**: See intermediate results at each step
+- **Reusable Templates**: Save and share your pipeline configurations
+
+### Semantic Analysis
+
+FlockMTL Flow doesn't just return raw query results—it provides:
+- Contextual explanations of results
+- Automated data visualizations
+- Insights and anomaly detection
+- Natural language summaries
+
+## 💡 Use Cases
+
+- **Business Intelligence**: Help business analysts explore data without SQL expertise
+- **Data Exploration**: Quickly answer ad-hoc questions about your data
+- **Education**: Teach SQL concepts through visual pipelines
+- **Prototyping**: Rapidly build and test data applications
+
+## 📊 Example Queries
+
+```
+"Show me sales trends by region for the last quarter"
+```
+↓ FlockMTL Flow transforms this into ↓
+```sql
+SELECT 
+  region, 
+  SUM(sales) as total_sales,
+  DATE_TRUNC('month', sale_date) as month
+FROM sales
+WHERE sale_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 3 MONTH)
+GROUP BY region, month
+ORDER BY region, month
+```
+
+## 🤝 Contributing
+
+We welcome contributions to FlockMTL Flow! See our [contributing guide](CONTRIBUTING.md) for more information.
+
+## 📜 License
 
 [MIT](LICENSE)
+
+---
+
+<p align="center">Built with ❤️ by the FlockMTL team</p>
