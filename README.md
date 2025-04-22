@@ -36,7 +36,7 @@ The FastAPI backend serves as the engine of FlockMTL Flow:
 
 The Next.js frontend delivers an intuitive user experience:
 
-- **Visual Pipeline Builder**: Drag-and-drop interface for creating query flows
+- **Visual Query Plan**: An interface to generate the query flows
 - **Interactive Components**: Real-time visualization of query results
 - **SQL Editor Integration**: Advanced options for technical users
 
