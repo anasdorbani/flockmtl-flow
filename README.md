@@ -21,7 +21,6 @@ FlockMTL Flow follows a modern, modular architecture:
 flockmtl-flow/
 ├── 🖥️ frontend/      # Next.js visual interface
 ├── ⚙️ backend/       # FastAPI server
-└── 📄 docs/          # Documentation
 ```
 
 ### Backend
