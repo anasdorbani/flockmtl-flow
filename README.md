@@ -20,7 +20,7 @@ FlockMTL Flow follows a modern, modular architecture:
 ```
 flockmtl-flow/
 ├── 🖥️ frontend/      # Next.js visual interface
-├── ⚙️ backend/       # FastAPI server
+└── ⚙️ backend/       # FastAPI server
 ```
 
 ### Backend
@@ -48,14 +48,9 @@ The Next.js frontend delivers an intuitive user experience:
    cd backend
    ```
 
-2. Install dependencies:
+2. Run the development server:
    ```bash
-   pip install -e .
-   ```
-
-3. Run the development server:
-   ```bash
-   uvicorn app.main:app --reload
+   uv run fastapi dev
    ```
 
 ### Frontend Setup
