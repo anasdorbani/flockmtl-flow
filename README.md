@@ -126,14 +126,6 @@ GROUP BY region, month
 ORDER BY region, month
 ```
 
-## 🤝 Contributing
-
-We welcome contributions to FlockMTL Flow! See our [contributing guide](CONTRIBUTING.md) for more information.
-
-## 📜 License
-
-[MIT](LICENSE)
-
 ---
 
 <p align="center">Built with ❤️ by the FlockMTL team</p>
