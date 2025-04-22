@@ -90,9 +90,8 @@ FlockMTL Flow uses advanced LLM capabilities to:
 
 ### Interactive Pipeline Building
 
-- **Drag-and-Drop Nodes**: Easily construct complex query pipelines
+- **Complex query pipelines**: Easily construct complex query pipelines
 - **Real-Time Feedback**: See intermediate results at each step
-- **Reusable Templates**: Save and share your pipeline configurations
 
 ### Semantic Analysis
 
