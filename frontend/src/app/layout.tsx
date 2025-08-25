@@ -27,11 +27,11 @@ export default function RootLayout({
         <ConfigProvider
           theme={{
             token: {
-              colorPrimary: '#FF9128',
+              colorPrimary: '#FF9129',
             },
           }}
         >
-        <AntdRegistry>{children}</AntdRegistry>
+          <AntdRegistry>{children}</AntdRegistry>
         </ConfigProvider>
       </body>
     </html>

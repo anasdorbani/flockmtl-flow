@@ -1,34 +1,50 @@
 import axios from "axios";
+import { NextRequest, NextResponse } from "next/server";
 import type { Pipeline } from "@/../types/pipeline";
-import { demoPipeline } from "./demo-pipeline";
 
-export async function POST(request: Request): Promise<Response> {
-  const { query, pipeline }: { query: string, pipeline: Pipeline } = await request.json();
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
 
-  // await new Promise((resolve) => setTimeout(resolve, 3000));
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  try {
+    const { query, pipeline }: { query: string; pipeline: Pipeline } =
+      await request.json();
 
-  console.log('query', query);
-  console.log('pipeline', pipeline);
+    console.log("query", query);
+    console.log("pipeline", pipeline);
 
-  const response = await axios.post(
-    "http://localhost:8000/run-query-with-refinement",
-    {
-      query,
-      pipeline,
-    },
-    {
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-      },
+    const response = await axios.post(
+      `${BACKEND_URL}/run-query-with-refinement`,
+      { query, pipeline },
+      {
+        timeout: 120000, // 2 minute timeout for FlockMTL queries
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return NextResponse.json(response.data);
+  } catch (error: any) {
+    console.error("Run query with refinement error:", error);
+
+    if (
+      error.code === "ECONNRESET" ||
+      error.code === "ECONNABORTED" ||
+      error.code === "ETIMEDOUT"
+    ) {
+      return NextResponse.json(
+        { detail: "Request timeout - the query refinement took too long" },
+        { status: 504 }
+      );
     }
-  );
 
-  return new Response(JSON.stringify(response.data), {
-    headers: { "Content-Type": "application/json" },
-  });
-
-  return new Response(JSON.stringify({ pipeline: demoPipeline, query: 'test' }), {
-    headers: { "Content-Type": "application/json" },
-  });
+    return NextResponse.json(
+      {
+        detail:
+          error.response?.data?.detail || "Failed to run query with refinement",
+      },
+      { status: error.response?.status || 500 }
+    );
+  }
 }

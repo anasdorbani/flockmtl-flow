@@ -1,30 +1,47 @@
 import axios from "axios";
-import type { Pipeline } from "@/../types/pipeline";
-import { demoPipeline } from "./demo-pipeline";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: Request): Promise<Response> {
-  const { prompt }: { prompt: string } = await request.json();
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
 
-  // await new Promise((resolve) => setTimeout(resolve, 3000));
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  try {
+    const {
+      prompt,
+      selected_tables,
+    }: { prompt: string; selected_tables?: string[] } = await request.json();
 
-  const response = await axios.post(
-    "http://localhost:8000/generate-response-table",
-    {
-      prompt: prompt,
-    },
-    {
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-      },
+    const response = await axios.post(
+      `${BACKEND_URL}/generate-response-table`,
+      { prompt, selected_tables: selected_tables || [] },
+      {
+        timeout: 120000, // 2 minute timeout for FlockMTL queries
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return NextResponse.json(response.data);
+  } catch (error: any) {
+    console.error("Generate response table error:", error);
+
+    if (
+      error.code === "ECONNRESET" ||
+      error.code === "ECONNABORTED" ||
+      error.code === "ETIMEDOUT"
+    ) {
+      return NextResponse.json(
+        { detail: "Request timeout - the query took too long to process" },
+        { status: 504 }
+      );
     }
-  );
 
-  return new Response(JSON.stringify(response.data), {
-    headers: { "Content-Type": "application/json" },
-  });
-
-  return new Response(JSON.stringify({ pipeline: demoPipeline, query: 'test' }), {
-    headers: { "Content-Type": "application/json" },
-  });
+    return NextResponse.json(
+      {
+        detail:
+          error.response?.data?.detail || "Failed to generate response table",
+      },
+      { status: error.response?.status || 500 }
+    );
+  }
 }

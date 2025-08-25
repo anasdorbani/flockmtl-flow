@@ -3,8 +3,36 @@
 @tailwind utilities;
 
 :root {
-  /* --background: #ffffff;
-  --foreground: #171717; */
+  --flock-orange: #ff9129;
+  --flock-orange-light: #ffb366;
+  --flock-orange-dark: #e6821f;
+  --flock-orange-50: #fff8f3;
+  --flock-orange-100: #ffead9;
+  --flock-orange-200: #ffd4b3;
+  --flock-orange-300: #ffbe8c;
+  --flock-orange-400: #ffa866;
+  --flock-orange-500: #ff9129;
+  --flock-orange-600: #e6821f;
+  --flock-orange-700: #cc7315;
+  --flock-orange-800: #b3640b;
+  --flock-orange-900: #995501;
+
+  /* Consistent Design System */
+  --border-radius: 16px;
+  --border-radius-sm: 12px;
+  --border-radius-lg: 20px;
+  --border-radius-xl: 24px;
+  --border-color: #e7e7ea;
+  --border-color-hover: var(--flock-orange-200);
+  --border-color-focus: var(--flock-orange);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -14,6 +42,17 @@
   }
 }
 
+/* App-wide light background akin to ChatGPT */
+html,
+body {
+  background: #ffffff;
+  color: #11181c;
+}
+
+.ant-layout {
+  background: transparent !important;
+}
+
 .light .react-flow__node {
   border: 1px solid #f0f0f0;
   border-radius: 20px;
@@ -21,23 +60,298 @@
   text-align: start;
 }
 
-/* width */
+/* Smooth scrollbars */
 ::-webkit-scrollbar {
-    width: 5px;
+  width: 6px;
+  height: 6px;
 }
 
-/* Track */
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+  background: #ffffff;
+  border-radius: 3px;
 }
 
-/* Handle */
 ::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 5px;
+  background: #cbd5e1;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
 }
 
-/* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+  background: var(--flock-orange);
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition-property: color, background-color, border-color,
+    text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter,
+    backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Custom animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Consistent component styles */
+.flock-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.flock-card:hover {
+  border-color: var(--border-color-hover);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.flock-button {
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.flock-button:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.flock-input {
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.flock-input:hover {
+  border-color: var(--border-color-hover);
+}
+
+.flock-input:focus {
+  border-color: var(--border-color-focus);
+  box-shadow: 0 0 0 3px rgba(255, 145, 41, 0.12);
+}
+
+.flock-modal {
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-xl);
+}
+.text-flock-orange {
+  color: var(--flock-orange);
+}
+.text-flock-orange-light {
+  color: var(--flock-orange-light);
+}
+.text-flock-orange-dark {
+  color: var(--flock-orange-dark);
+}
+.bg-flock-orange {
+  background-color: var(--flock-orange);
+}
+.bg-flock-orange-50 {
+  background-color: var(--flock-orange-50);
+}
+.bg-flock-orange-100 {
+  background-color: var(--flock-orange-100);
+}
+.bg-flock-orange-200 {
+  background-color: var(--flock-orange-200);
+}
+.border-flock-orange {
+  border-color: var(--flock-orange);
+}
+.border-flock-orange-100 {
+  border-color: var(--flock-orange-100);
+}
+.border-flock-orange-200 {
+  border-color: var(--flock-orange-200);
+}
+
+.hover\:text-flock-orange:hover {
+  color: var(--flock-orange);
+}
+.hover\:bg-flock-orange-100:hover {
+  background-color: var(--flock-orange-100);
+}
+.hover\:bg-flock-orange-200:hover {
+  background-color: var(--flock-orange-200);
+}
+.hover\:border-flock-orange:hover {
+  border-color: var(--flock-orange);
+}
+
+.focus-within\:border-flock-orange:focus-within {
+  border-color: var(--flock-orange);
+}
+
+/* Gradient utilities */
+.bg-gradient-flock-orange {
+  background: linear-gradient(90deg, #ffffff 0%, var(--flock-orange-50) 100%);
+}
+.bg-gradient-flock-orange-to-red {
+  background: linear-gradient(
+    135deg,
+    var(--flock-orange-50) 0%,
+    #ffffff 50%,
+    var(--flock-orange-50) 100%
+  );
+}
+.text-gradient-flock-orange {
+  background: linear-gradient(
+    135deg,
+    var(--flock-orange) 0%,
+    var(--flock-orange-dark) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes pulse-flock-orange {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+    background-color: var(--flock-orange-100);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+    background-color: var(--flock-orange-200);
+  }
+}
+
+.animate-pulse-flock-orange {
+  animation: pulse-flock-orange 2s ease-in-out infinite;
+}
+
+/* Utility classes */
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.5s ease-out;
+}
+
+.animate-pulse-blue {
+  animation: pulse-blue 2s ease-in-out infinite;
+}
+
+/* Enhanced Ant Design overrides */
+.ant-card {
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--border-radius) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.ant-card:hover {
+  border-color: var(--border-color-hover) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.ant-btn {
+  border-radius: var(--border-radius-sm) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.ant-btn:hover {
+  box-shadow: var(--shadow) !important;
+  transform: translateY(-1px) !important;
+}
+
+.ant-btn-primary:hover {
+  box-shadow: 0 6px 16px rgba(255, 145, 41, 0.28) !important;
+}
+
+.ant-input,
+.ant-select-selector {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+.ant-input:hover,
+.ant-select:hover .ant-select-selector {
+  border-color: var(--border-color-hover) !important;
+}
+
+.ant-input:focus,
+.ant-select:focus .ant-select-selector,
+.ant-select-focused .ant-select-selector {
+  border-color: var(--border-color-focus) !important;
+  box-shadow: 0 0 0 3px rgba(255, 145, 41, 0.12) !important;
+}
+
+.ant-table-wrapper {
+  border-radius: var(--border-radius) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.ant-modal-content {
+  border-radius: var(--border-radius-lg) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--flock-orange-100);
+}
+
+/* Loading shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    #ffffff 0px,
+    var(--flock-orange-50) 40px,
+    #ffffff 80px
+  );
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
 }

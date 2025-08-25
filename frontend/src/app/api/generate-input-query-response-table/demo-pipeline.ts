@@ -22,7 +22,7 @@ export const demoPipeline: Pipeline = {
           params: {
             model_name: "gpt-4o-mini",
             prompt: "List reviews mentioning technical issues",
-            input_columns: ["Review"],
+            context_columns: [{ data: "Review" }],
           },
           children: [
             {
@@ -40,7 +40,7 @@ export const demoPipeline: Pipeline = {
                   params: {
                     model_name: "gpt-4o-mini",
                     prompt: "Give a severity score for each technical issue",
-                    input_columns: ["Review"],
+                    context_columns: [{ data: "Review" }],
                   },
                   children: [
                     {

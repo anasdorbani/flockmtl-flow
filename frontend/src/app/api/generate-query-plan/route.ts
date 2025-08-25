@@ -1,30 +1,44 @@
 import axios from "axios";
-import type { Pipeline } from "@/../types/pipeline";
-import { demoPipeline } from "./demo-pipeline";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: Request): Promise<Response> {
-  const { query }: { query: string } = await request.json();
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
 
-  // await new Promise((resolve) => setTimeout(resolve, 3000));
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  try {
+    const { query }: { query: string } = await request.json();
 
-  const response = await axios.post(
-    "http://localhost:8000/generate-query-plan",
-    {
-      query
-    },
-    {
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-      },
+    const response = await axios.post(
+      `${BACKEND_URL}/generate-query-plan`,
+      { query },
+      {
+        timeout: 30000, // 30 second timeout
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return NextResponse.json(response.data);
+  } catch (error: any) {
+    console.error("Generate query plan error:", error);
+
+    if (
+      error.code === "ECONNRESET" ||
+      error.code === "ECONNABORTED" ||
+      error.code === "ETIMEDOUT"
+    ) {
+      return NextResponse.json(
+        { detail: "Request timeout - the query plan generation took too long" },
+        { status: 504 }
+      );
     }
-  );
 
-  return new Response(JSON.stringify(response.data), {
-    headers: { "Content-Type": "application/json" },
-  });
-
-  return new Response(JSON.stringify({ pipeline: demoPipeline, query: 'test' }), {
-    headers: { "Content-Type": "application/json" },
-  });
+    return NextResponse.json(
+      {
+        detail: error.response?.data?.detail || "Failed to generate query plan",
+      },
+      { status: error.response?.status || 500 }
+    );
+  }
 }

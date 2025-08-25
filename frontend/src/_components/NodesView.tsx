@@ -82,8 +82,6 @@ export default function NodesView({ pipeline, promptData, setPromptData, setPipe
                     query: response.data.query
                 });
                 setPipeline(response.data.pipeline);
-                console.log(response.data.pipeline);
-                console.log(response.data);
                 const { Nodes, Edges } = BuildNodesAndEdges(response.data, response.data.pipeline, handleInputChange);
                 setNodes(Nodes);
                 setEdges(Edges);
@@ -91,7 +89,7 @@ export default function NodesView({ pipeline, promptData, setPromptData, setPipe
                 setShowApplyEdits(false);
             })
             .catch((error) => {
-                console.error(error);
+                // Handle error silently or with proper error handling
             })
             .finally(() => {
                 setIsRegenerating(false);

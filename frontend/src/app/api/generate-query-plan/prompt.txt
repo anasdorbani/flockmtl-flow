@@ -39,8 +39,14 @@ Here is the SQL query you should analyze:
 ```sql
 SELECT id, title, abstract, content, 
        llm_complete( {'model_name': 'gpt-4o', 'secret_name': 'high_rate'}, 
-                     {'prompt': 'Analyze the following research paper details (title, abstract, and content) and extract the global theme of the paper in a concise few words.'}, 
-                     {'title': title, 'abstract': abstract, 'content': content} ) AS theme 
+                     {
+                       'prompt': 'Analyze the following research paper details and extract the global theme in a concise few words.',
+                       'context_columns': [
+                         {'data': title, 'name': 'title'},
+                         {'data': abstract, 'name': 'abstract'}, 
+                         {'data': content, 'name': 'content'}
+                       ]
+                     } ) AS theme 
 FROM research_paper
 ```
 
