@@ -10,8 +10,8 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  title: "FlockMTL Flow",
-  description: "FlockMTL Flow is a tool for generating pipelines for natural language processing tasks.",
+  title: "FlockMTL",
+  description: "FlockMTL is a tool for generating pipelines for natural language processing tasks.",
 };
 
 export default function RootLayout({

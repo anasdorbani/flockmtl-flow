@@ -1,0 +1,11 @@
+transaction_id,account_id,transaction_date,transaction_type,amount,transaction_description,merchant_category,transaction_sentiment
+T0001,A1001,2025-08-01,Deposit,5000.00,"Salary deposit from TechCorp Inc - Software engineering compensation","Employment Income","Positive - regular income indicating job stability and career growth"
+T0002,A1001,2025-08-05,Withdrawal,2000.00,"Investment transfer to brokerage account for portfolio diversification","Investment Transfer","Positive - shows financial sophistication and long-term planning"
+T0003,A1002,2025-07-20,Deposit,10000.00,"Business consulting project payment - Digital transformation consulting","Professional Services","Very positive - high-value project completion indicating business success"
+T0004,A1003,2025-08-10,Deposit,2500.00,"Restaurant weekend revenue deposit - Summer peak season earnings","Business Revenue","Positive - seasonal business performing well during peak period"
+T0005,A1004,2025-08-15,Withdrawal,500.00,"Rent payment to landlord - Monthly housing expense","Housing Cost","Neutral - regular necessary expense showing responsible payment habits"
+T0006,A1003,2025-08-20,Withdrawal,1200.00,"Equipment purchase for kitchen upgrade - Commercial refrigeration unit","Business Equipment","Positive - business investment in operational improvements"
+T0007,A1006,2025-08-12,Deposit,3000.00,"Pension payment - Monthly retirement income from education sector","Retirement Income","Positive - stable retirement income providing financial security"
+T0008,A1007,2025-08-08,Withdrawal,1500.00,"Medical equipment purchase - Stethoscope and diagnostic tools","Professional Equipment","Positive - career investment showing professional development"
+T0009,A1008,2025-08-18,Withdrawal,800.00,"Business travel expenses - Client meeting in Toronto","Business Travel","Neutral - necessary business expense for client relationship building"
+T0010,A1009,2025-08-22,Transfer,750.00,"Tuition payment for graduate program - PhD dissertation research funding","Education Expense","Positive - educational investment showing commitment to career advancement"

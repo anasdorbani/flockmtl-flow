@@ -111,7 +111,7 @@ const ScalarFunctionNode: React.FC<ScalarFunctionNodeProps> = ({ operator, handl
                 <div>
                     <label className="font-semibold text-gray-700 flex justify-between items-center mb-2">
                         Prompt
-                        <MetaPromptModal prompt={params?.prompt} />
+                        {/* <MetaPromptModal prompt={params?.prompt} /> */}
                     </label>
                     <TextArea
                         name="prompt"

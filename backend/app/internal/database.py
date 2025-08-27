@@ -15,9 +15,70 @@ except Exception as e:
     raise
 
 
+def _insert_data_from_csv(file_path: str, table_name: str, columns: list[str]):
+    """
+    Helper function to insert data from CSV file into table.
+
+    Args:
+        file_path: Path to the CSV file
+        table_name: Name of the target table
+        columns: List of column names in correct order
+    """
+    import csv
+
+    if not os.path.exists(file_path):
+        logger.warning(f"Data file not found: {file_path}")
+        return
+
+    try:
+        with open(file_path, "r") as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            data = list(csv_reader)
+
+        if not data:
+            logger.warning(f"No data found in {file_path}")
+            return
+
+        # Prepare data for insertion
+        data_to_insert = []
+        for entry in data:
+            row = []
+            for col in columns:
+                value = entry.get(col, "")
+                # Convert numeric values - expanded list for new columns
+                if value and col in [
+                    "balance",
+                    "amount",
+                    "loan_amount",
+                    "commission_fee",
+                ]:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        pass
+                row.append(value)
+            data_to_insert.append(tuple(row))
+
+        # Create parameterized query
+        placeholders = ", ".join(["?"] * len(columns))
+        query = (
+            f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES ({placeholders})"
+        )
+
+        # Insert data
+        conn.executemany(query, data_to_insert)
+        conn.commit()
+
+        logger.info(f"✅ Inserted {len(data_to_insert)} rows into '{table_name}'")
+
+    except Exception as e:
+        logger.error(f"❌ Failed to insert data into '{table_name}': {e}")
+
+
 def _insert_data_from_json(file_path: str, table_name: str, columns: list[str]):
     """
     Helper function to insert data from JSON file into table.
+    (Legacy support for old JSON files)
 
     Args:
         file_path: Path to the JSON file
@@ -59,113 +120,163 @@ def _insert_data_from_json(file_path: str, table_name: str, columns: list[str]):
 
 def load_sample_data():
     """
-    Load sample data tables for demonstration purposes.
+    Load banking demo database with sample data for demonstration purposes.
+
+    This function creates a complete banking schema with the following tables:
+    - customers: Customer information with branch associations
+    - branches: Bank branch locations and details
+    - accounts: Customer bank accounts with balances
+    - transactions: Financial transactions history
+    - loans: Customer loans information
+    - atms: ATM locations and fee structures
 
     This function creates tables and loads data only if called explicitly.
     It follows a clean sequence:
     1. Create table schemas
-    2. Load data from JSON files if they exist
+    2. Load data from CSV files if they exist
     3. Log results
     """
     logger.info("Starting sample data loading process...")
 
-    # Define table schemas
+    # Define table schemas for banking demo database
     table_schemas = {
-        "employees": {
+        "customers": {
             "schema": """
-                id INTEGER PRIMARY KEY,
-                name TEXT,
-                position TEXT,
-                department TEXT,
-                salary FLOAT,
-                experience_years INTEGER,
-                education TEXT,
+                customer_id TEXT PRIMARY KEY,
+                first_name TEXT,
+                last_name TEXT,
+                date_of_birth TEXT,
+                gender TEXT,
+                branch_id TEXT,
+                occupation TEXT,
+                income_range TEXT,
+                customer_notes TEXT,
+                risk_profile TEXT
+            """,
+            "columns": [
+                "customer_id",
+                "first_name",
+                "last_name",
+                "date_of_birth",
+                "gender",
+                "branch_id",
+                "occupation",
+                "income_range",
+                "customer_notes",
+                "risk_profile",
+            ],
+            "file": "app/internal/data/customers.csv",
+        },
+        "branches": {
+            "schema": """
+                branch_id TEXT PRIMARY KEY,
+                branch_name TEXT,
+                branch_city TEXT,
+                branch_type TEXT,
+                specialization TEXT,
+                customer_demographics TEXT,
+                performance_notes TEXT
+            """,
+            "columns": [
+                "branch_id",
+                "branch_name",
+                "branch_city",
+                "branch_type",
+                "specialization",
+                "customer_demographics",
+                "performance_notes",
+            ],
+            "file": "app/internal/data/branches.csv",
+        },
+        "accounts": {
+            "schema": """
+                account_id TEXT PRIMARY KEY,
+                customer_id TEXT,
+                account_type TEXT,
+                opened_date TEXT,
+                balance FLOAT,
+                account_status TEXT,
+                usage_pattern TEXT,
+                financial_goals TEXT
+            """,
+            "columns": [
+                "account_id",
+                "customer_id",
+                "account_type",
+                "opened_date",
+                "balance",
+                "account_status",
+                "usage_pattern",
+                "financial_goals",
+            ],
+            "file": "app/internal/data/accounts.csv",
+        },
+        "transactions": {
+            "schema": """
+                transaction_id TEXT PRIMARY KEY,
+                account_id TEXT,
+                transaction_date TEXT,
+                transaction_type TEXT,
+                amount FLOAT,
+                transaction_description TEXT,
+                merchant_category TEXT,
+                transaction_sentiment TEXT
+            """,
+            "columns": [
+                "transaction_id",
+                "account_id",
+                "transaction_date",
+                "transaction_type",
+                "amount",
+                "transaction_description",
+                "merchant_category",
+                "transaction_sentiment",
+            ],
+            "file": "app/internal/data/transactions.csv",
+        },
+        "loans": {
+            "schema": """
+                loan_id TEXT PRIMARY KEY,
+                account_id TEXT,
+                loan_type TEXT,
+                loan_amount FLOAT,
+                loan_date TEXT,
+                loan_purpose TEXT,
+                approval_rationale TEXT,
+                repayment_behavior TEXT
+            """,
+            "columns": [
+                "loan_id",
+                "account_id",
+                "loan_type",
+                "loan_amount",
+                "loan_date",
+                "loan_purpose",
+                "approval_rationale",
+                "repayment_behavior",
+            ],
+            "file": "app/internal/data/loans.csv",
+        },
+        "atms": {
+            "schema": """
+                atm_id TEXT PRIMARY KEY,
+                branch_id TEXT,
                 location TEXT,
-                performance_rating FLOAT,
-                last_promotion_year INTEGER,
-                bio TEXT
+                commission_fee FLOAT,
+                usage_pattern TEXT,
+                security_level TEXT,
+                customer_feedback TEXT
             """,
             "columns": [
-                "id",
-                "name",
-                "position",
-                "department",
-                "salary",
-                "experience_years",
-                "education",
+                "atm_id",
+                "branch_id",
                 "location",
-                "performance_rating",
-                "last_promotion_year",
-                "bio",
+                "commission_fee",
+                "usage_pattern",
+                "security_level",
+                "customer_feedback",
             ],
-            "file": "app/internal/data/fake_employees.json",
-        },
-        "projects": {
-            "schema": """
-                id INTEGER PRIMARY KEY,
-                name TEXT,
-                department TEXT,
-                budget FLOAT,
-                deadline TEXT,
-                status TEXT,
-                manager TEXT,
-                team_size INTEGER,
-                description TEXT
-            """,
-            "columns": [
-                "id",
-                "name",
-                "department",
-                "budget",
-                "deadline",
-                "status",
-                "manager",
-                "team_size",
-                "description",
-            ],
-            "file": "app/internal/data/fake_projects.json",
-        },
-        "clients": {
-            "schema": """
-                client_id INTEGER PRIMARY KEY,
-                client_name TEXT,
-                industry TEXT,
-                location TEXT,
-                account_manager TEXT,
-                status TEXT
-            """,
-            "columns": [
-                "client_id",
-                "client_name",
-                "industry",
-                "location",
-                "account_manager",
-                "status",
-            ],
-            "file": "app/internal/data/fake_clients.json",
-        },
-        "tasks": {
-            "schema": """
-                task_id INTEGER PRIMARY KEY,
-                project_id INTEGER,
-                assigned_to TEXT,
-                title TEXT,
-                description TEXT,
-                status TEXT,
-                due_date TEXT,
-                priority TEXT
-            """,
-            "columns": [
-                "task_id",
-                "project_id",
-                "assigned_to",
-                "title",
-                "description",
-                "status",
-                "due_date",
-                "priority",
-            ],
-            "file": "app/internal/data/fake_tasks.json",
+            "file": "app/internal/data/atms.csv",
         },
     }
 
@@ -181,10 +292,13 @@ def load_sample_data():
             logger.error(f"❌ Failed to create table '{table_name}': {e}")
             continue
 
-    # Step 2: Load data from JSON files
+    # Step 2: Load data from CSV files
     for table_name, config in table_schemas.items():
         try:
-            _insert_data_from_json(config["file"], table_name, config["columns"])
+            if config["file"].endswith(".csv"):
+                _insert_data_from_csv(config["file"], table_name, config["columns"])
+            else:
+                _insert_data_from_json(config["file"], table_name, config["columns"])
         except Exception as e:
             logger.error(f"❌ Failed to load data for table '{table_name}': {e}")
 

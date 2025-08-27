@@ -1,0 +1,11 @@
+account_id,customer_id,account_type,opened_date,balance,account_status,usage_pattern,financial_goals
+A1001,C001,Premium Savings,2020-05-01,15500.50,Active,"High-value transactions, frequent international transfers, mobile banking heavy user","Building emergency fund for career transition, planning investment portfolio expansion"
+A1002,C001,Business Checking,2021-10-11,3420.75,Active,"Moderate activity, regular salary deposits, occasional large purchases","Saving for home down payment, considering mortgage pre-approval"
+A1003,C002,Business Operating,2019-03-15,24500.00,Active,"High transaction volume, seasonal variations, cash-intensive business","Expanding restaurant chain, needs working capital line of credit"
+A1004,C003,Young Professional,2022-01-23,5800.00,Active,"Digital-first usage, frequent small transactions, budget-conscious","First-time home buyer savings, building credit history"
+A1005,C004,Contractor Checking,2020-07-07,800.00,Overdrawn,"Irregular deposits, seasonal cash flow, occasional overdrafts","Managing cash flow gaps, needs better financial planning tools"
+A1006,C005,Senior Savings,2021-06-15,28900.25,Active,"Conservative usage, regular pension deposits, minimal risk tolerance","Retirement income optimization, estate planning considerations"
+A1007,C006,Student Professional,2023-02-10,3200.80,Active,"Growing balance, educational loan payments, future-focused","Medical career investment, student loan management, future planning"
+A1008,C007,Consultant Operating,2020-12-05,12500.40,Active,"Irregular large deposits, frequent travel expenses, tax planning needs","Business growth funding, retirement savings acceleration"
+A1009,C008,Graduate Student,2022-08-18,750.90,Active,"Very limited activity, careful budgeting, academic focus","Dissertation completion funding, post-graduation career planning"
+A1010,C009,Executive Checking,2021-04-22,8425.60,Active,"High-volume transactions, commission-based deposits, premium services","Investment diversification, tax optimization strategies"

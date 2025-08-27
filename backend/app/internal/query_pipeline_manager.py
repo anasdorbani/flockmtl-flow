@@ -312,7 +312,7 @@ class QueryPipelineManager:
 
         try:
             response = self.openai.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": table_selection_prompt},
                     {"role": "user", "content": prompt},
@@ -368,6 +368,10 @@ class QueryPipelineManager:
         if selected_tables and len(selected_tables) > 0:
             table_names = selected_tables
             logger.info(f"Using {len(table_names)} user-selected tables: {table_names}")
+
+            # Log each selected table for debugging
+            for table in table_names:
+                logger.debug(f"User selected table: {table}")
         else:
             table_names = self.choose_table_based_on_prompt(prompt)
             logger.info(
@@ -404,36 +408,82 @@ class QueryPipelineManager:
 
         try:
             response = self.openai.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": generation_prompt},
                     {"role": "user", "content": prompt},
                 ],
             )
 
+            # Check if response is None
+            if response is None:
+                error_msg = "OpenAI API returned None response"
+                logger.error(error_msg)
+                self.debug_info["last_execution_error"] = error_msg
+                return f"SELECT '{error_msg}' AS error_message;"
+
+            # Check if response has choices
+            if not hasattr(response, 'choices') or not response.choices:
+                error_msg = "OpenAI API response has no choices"
+                logger.error(error_msg)
+                self.debug_info["last_execution_error"] = error_msg
+                return f"SELECT '{error_msg}' AS error_message;"
+
+            # Check if first choice has message
+            if not hasattr(response.choices[0], 'message') or response.choices[0].message is None:
+                error_msg = "OpenAI API response choice has no message"
+                logger.error(error_msg)
+                self.debug_info["last_execution_error"] = error_msg
+                return f"SELECT '{error_msg}' AS error_message;"
+
+            # Check if message has content
+            if not hasattr(response.choices[0].message, 'content') or response.choices[0].message.content is None:
+                error_msg = "OpenAI API response message has no content"
+                logger.error(error_msg)
+                self.debug_info["last_execution_error"] = error_msg
+                return f"SELECT '{error_msg}' AS error_message;"
+
             generated_query = response.choices[0].message.content.strip()
 
+            # Check if generated query is empty
+            if not generated_query:
+                error_msg = "OpenAI API returned empty query content"
+                logger.error(error_msg)
+                self.debug_info["last_execution_error"] = error_msg
+                return f"SELECT '{error_msg}' AS error_message;"
+
+            # Clean up any markdown code blocks if they somehow got through
+            if generated_query.startswith("```sql"):
+                generated_query = (
+                    generated_query.replace("```sql", "").replace("```", "").strip()
+                )
+            elif generated_query.startswith("```"):
+                generated_query = generated_query.replace("```", "").strip()
+
             self.debug_info["last_openai_response"] = {
-                "model": "gpt-4o-mini",
+                "model": "gpt-4o",
                 "prompt_tokens": response.usage.prompt_tokens
-                if hasattr(response, "usage")
+                if hasattr(response, "usage") and response.usage
                 else None,
                 "completion_tokens": response.usage.completion_tokens
-                if hasattr(response, "usage")
+                if hasattr(response, "usage") and response.usage
                 else None,
                 "raw_response": generated_query,
             }
 
             self.debug_info["last_generated_query"] = generated_query
 
-            logger.debug(f"Generated SQL query: {generated_query}")
+            logger.info(
+                f"Generated SQL query: {generated_query[:200]}{'...' if len(generated_query) > 200 else ''}"
+            )
+            logger.debug(f"Full generated SQL query: {generated_query}")
 
             return generated_query
 
         except Exception as e:
             error_msg = f"SQL generation failed: {str(e)}"
             logger.error(error_msg)
-            traceback.print_exc()
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             self.debug_info["last_execution_error"] = error_msg
             return f"SELECT '{error_msg}' AS error_message;"
 
@@ -456,11 +506,21 @@ class QueryPipelineManager:
         if not table_schema:
             return "SELECT 'Could not retrieve table schema. Please check your tables.' AS error_message;"
 
+        # Format table names and schemas for the template
+        formatted_table_names = ", ".join(table_names)
+        formatted_schema = ""
+        for schema_info in table_schema:
+            table_name = schema_info["table_name"]
+            columns = schema_info["schema"]
+            formatted_schema += f"\nTable: {table_name}\nColumns:\n"
+            for col in columns:
+                formatted_schema += f"  - {col['column_name']} ({col['data_type']})\n"
+
         generation_prompt = SYSTEM_GENERATION_PROMPT.format(
-            table_name=table_names, table_schema=table_schema
+            table_name=formatted_table_names, table_schema=formatted_schema
         )
         response = self.openai.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": generation_prompt},
                 {
@@ -478,7 +538,7 @@ class QueryPipelineManager:
         Generates a query execution pipeline based on the SQL query.
         """
         response = self.openai.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": SYSTEM_PIPELINE_GENERATION},
                 {"role": "user", "content": query},
@@ -591,7 +651,13 @@ class QueryPipelineManager:
         """
         Generates a response table based on the user's prompt.
         """
-        logger.debug(f"Starting response table generation for prompt: {prompt}")
+        logger.info("=== STARTING RESPONSE TABLE GENERATION ===")
+        logger.info(f"Prompt: {prompt[:100]}{'...' if len(prompt) > 100 else ''}")
+        logger.info(f"Selected tables from frontend: {selected_tables}")
+        logger.info(
+            f"Number of selected tables: {len(selected_tables) if selected_tables else 0}"
+        )
+
         if selected_tables:
             logger.debug(f"Using selected tables: {selected_tables}")
 
@@ -624,15 +690,16 @@ class QueryPipelineManager:
 
         except Exception as e:
             error_msg = str(e)
-            execution_debug = self.get_debug_info().get("last_execution_error", {})
+            debug_info = self.get_debug_info() or {}
+            execution_debug = debug_info.get("last_execution_error") or {}
 
             # Enhanced error message based on error type
-            if execution_debug.get("is_timeout_error"):
+            if isinstance(execution_debug, dict) and execution_debug.get("is_timeout_error"):
                 user_friendly_error = (
                     "The query execution timed out. This might happen with complex AI operations. "
                     "Try simplifying your request or try again."
                 )
-            elif execution_debug.get("is_flockmtl_error"):
+            elif isinstance(execution_debug, dict) and execution_debug.get("is_flockmtl_error"):
                 user_friendly_error = (
                     "FlockMTL function execution failed. Please check if your OpenAI API key is configured correctly "
                     "and you have sufficient API quota."
@@ -651,13 +718,13 @@ class QueryPipelineManager:
                     "last_generated_query", "Query generation failed"
                 ),
                 "table": [{"error": user_friendly_error}],
-                "execution_time": execution_debug.get("execution_time_seconds", 0),
+                "execution_time": execution_debug.get("execution_time_seconds", 0) if isinstance(execution_debug, dict) else 0,
                 "selected_tables": selected_tables or [],
-                "debug_info": self.get_debug_info(),
+                "debug_info": debug_info,
                 "error": {
                     "message": user_friendly_error,
                     "technical_details": error_msg,
-                    "error_type": execution_debug.get("error_type", type(e).__name__),
+                    "error_type": execution_debug.get("error_type", type(e).__name__) if isinstance(execution_debug, dict) else type(e).__name__,
                 },
             }
 
@@ -711,11 +778,21 @@ class QueryPipelineManager:
         if not table_schema:
             return "SELECT 'Could not retrieve table schema. Please check your tables.' AS error_message;"
 
+        # Format table names and schemas for the template
+        formatted_table_names = ", ".join(table_names)
+        formatted_schema = ""
+        for schema_info in table_schema:
+            table_name = schema_info["table_name"]
+            columns = schema_info["schema"]
+            formatted_schema += f"\nTable: {table_name}\nColumns:\n"
+            for col in columns:
+                formatted_schema += f"  - {col['column_name']} ({col['data_type']})\n"
+
         generation_prompt = SYSTEM_GENERATION_PROMPT.format(
-            table_name=table_names, table_schema=table_schema
+            table_name=formatted_table_names, table_schema=formatted_schema
         )
         response = self.openai.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": generation_prompt},
                 {
@@ -752,7 +829,7 @@ class QueryPipelineManager:
         """
 
         response = self.openai.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[
                 {
                     "role": "system",

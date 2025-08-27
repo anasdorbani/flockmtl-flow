@@ -1,4 +1,4 @@
-# FlockMTL Flow
+# FlockMTL
 
 An AI-powered data analysis platform that lets you query your data using natural language. Built with [FlockMTL](https://dsg-polymtl.github.io/flockmtl/) and DuckDB.
 
@@ -12,6 +12,7 @@ An AI-powered data analysis platform that lets you query your data using natural
 ## Quick Start
 
 1. **Setup Backend**:
+
    ```bash
    cd backend
    uv sync
@@ -20,6 +21,7 @@ An AI-powered data analysis platform that lets you query your data using natural
    ```
 
 2. **Setup Frontend**:
+
    ```bash
    cd frontend
    pnpm install

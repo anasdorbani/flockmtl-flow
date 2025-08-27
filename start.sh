@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# FlockMTL Flow Startup Script
+# FlockMTL Startup Script
 
-echo "🚀 Starting FlockMTL Flow with Dynamic Table Management"
+echo "🚀 Starting FlockMTL with Dynamic Table Management"
 echo "=================================================="
 
 # Check if we're in the project root
@@ -88,7 +88,7 @@ cd ..
 
 # Print status
 echo ""
-echo "✅ FlockMTL Flow is starting up!"
+echo "✅ FlockMTL is starting up!"
 echo "   Backend:  http://localhost:8000"
 echo "   Frontend: http://localhost:3000"
 echo ""

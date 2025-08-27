@@ -20,7 +20,7 @@ export default function HeroSection() {
 
                     <Space direction="vertical" size="large" className="w-full">
                         <Title level={1} className="!mb-0 !text-2xl md:!text-3xl lg:!text-4xl font-bold text-gradient-flock-orange">
-                            FlockMTL Flow
+                            FlockMTL
                         </Title>
 
                         <Title level={3} className="!mb-0 !text-lg md:!text-xl text-gray-700 font-medium">

@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 # Create FastAPI app with metadata
 app = FastAPI(
-    title="FlockMTL Flow API",
-    description="Backend API for FlockMTL Flow - AI-powered data analysis with dynamic table management",
+    title="FlockMTL API",
+    description="Backend API for FlockMTL - AI-powered data analysis with dynamic table management",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -40,7 +40,7 @@ async def root():
     try:
         system_status = get_system_status()
         return {
-            "message": "FlockMTL Flow API is running!",
+            "message": "FlockMTL API is running!",
             "version": "1.0.0",
             "status": "healthy" if "error" not in system_status else "degraded",
             "system_status": system_status,
@@ -48,7 +48,7 @@ async def root():
     except Exception as e:
         logger.error(f"Error in root endpoint: {e}")
         return {
-            "message": "FlockMTL Flow API is running with issues",
+            "message": "FlockMTL API is running with issues",
             "version": "1.0.0",
             "status": "error",
             "error": str(e),
@@ -96,7 +96,7 @@ async def health_check():
 @app.on_event("startup")
 async def startup_event():
     """Application startup event handler."""
-    logger.info("Starting FlockMTL Flow API...")
+    logger.info("Starting FlockMTL API...")
 
     try:
         system_status = get_system_status()
@@ -117,7 +117,7 @@ async def startup_event():
         if system_status.get("environment", {}).get("load_sample_data"):
             logger.info("  - Sample data loading: ENABLED")
 
-        logger.info("FlockMTL Flow API startup completed successfully")
+        logger.info("FlockMTL API startup completed successfully")
 
     except Exception as e:
         logger.error(f"Error during startup: {e}")
@@ -126,6 +126,6 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     """Application shutdown event handler."""
-    logger.info("Shutting down FlockMTL Flow API...")
+    logger.info("Shutting down FlockMTL API...")
     # Add any cleanup operations here if needed
-    logger.info("FlockMTL Flow API shutdown completed")
+    logger.info("FlockMTL API shutdown completed")
