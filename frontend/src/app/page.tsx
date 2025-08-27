@@ -13,7 +13,7 @@ import LoadingAnimation from "@/_components/LoadingAnimation";
 import HeroSection from "@/_components/HeroSection";
 import { FaGithub } from "react-icons/fa";
 import { SiGoogledocs } from "react-icons/si";
-import { DatabaseOutlined } from "@ant-design/icons";
+import { DatabaseOutlined, ExclamationCircleOutlined, ReloadOutlined } from "@ant-design/icons";
 import ResponseTableSection from "@/_components/ResponseTableSection";
 
 export default function Home() {
@@ -40,32 +40,42 @@ export default function Home() {
   const [isRegeneratingResponseTable, setIsRegeneratingResponseTable] = useState(false);
   const [isGeneratingQueryPlan, setIsGeneratingQueryPlan] = useState(false);
   const [showPlan, setShowPlan] = useState(false);
+  const [regenerationError, setRegenerationError] = useState<string | null>(null);
+  const [initialGenerationError, setInitialGenerationError] = useState<string | null>(null);
 
   const generateResponseTable = async (prompt: string, selectedTables?: string[]) => {
     setIsGeneratingResponseTable(true);
     setIsResponseTableReady(false);
+    setInitialGenerationError(null);
     return axios.post('/api/generate-response-table', { prompt, selected_tables: selectedTables || [] })
       .then((response) => {
         setPromptData(response.data);
         setIsGeneratingResponseTable(false);
         setIsResponseTableReady(true);
       })
-      .catch(() => {
+      .catch((error) => {
         setIsGeneratingResponseTable(false);
+        const errorMessage = error.response?.data?.detail || error.message || 'Failed to generate response table';
+        setInitialGenerationError(errorMessage);
+        console.error('Generate response table error:', error);
       })
   };
 
   const regenerateResponseTable = async (prompt: string, query: string) => {
     setIsRegeneratingResponseTable(true);
+    setRegenerationError(null);
     return axios.post('/api/regenerate-response-table', { prompt, generated_query: query, selected_tables: selectedTables })
       .then((response) => {
         setPromptData(response.data);
         setIsRegeneratingResponseTable(false);
       })
-      .catch(() => {
+      .catch((error) => {
         setIsRegeneratingResponseTable(false);
-      }
-      )
+        const errorMessage = error.response?.data?.detail || error.message || 'Failed to regenerate response table';
+        setRegenerationError(errorMessage);
+        console.error('Regenerate response table error:', error);
+        throw error; // Re-throw so ResponseTableSection can handle it
+      })
   };
 
   const generateQueryPlan = async (query: string) => {
@@ -76,8 +86,10 @@ export default function Home() {
         setIsGeneratingQueryPlan(false);
         setShowPlan(true);
       })
-      .catch(() => {
+      .catch((error) => {
         setIsGeneratingQueryPlan(false);
+        console.error('Generate query plan error:', error);
+        // You could add a query plan error state here if needed
       })
   }
 
@@ -118,7 +130,7 @@ export default function Home() {
         </div>
         <div className="flex gap-2">
           <Button
-            className="flock-button font-bold hover:scale-105 transition-all duration-300 hover:shadow-lg"
+            className="header-button font-bold"
             onClick={() => setShowDataManager(true)}
             icon={<DatabaseOutlined />}
             size="large"
@@ -127,7 +139,7 @@ export default function Home() {
             <span className="hidden sm:inline">Manage Data</span>
           </Button>
           <Button
-            className="flock-button font-bold hover:scale-105 transition-all duration-300 hover:shadow-lg"
+            className="header-button font-bold"
             href="https://dais-polymtl.github.io/flockmtl/docs/what-is-flockmtl"
             icon={<SiGoogledocs />}
             target="_blank"
@@ -137,7 +149,7 @@ export default function Home() {
             <span className="hidden sm:inline">Docs</span>
           </Button>
           <Button
-            className="flock-button text-xl hover:scale-105 transition-all duration-300 hover:shadow-lg"
+            className="header-button text-xl"
             href="https://github.com/dais-polymtl/flockmtl"
             icon={<FaGithub />}
             target="_blank"
@@ -177,15 +189,55 @@ export default function Home() {
                       isRegeneratingResponseTable={isRegeneratingResponseTable}
                       generateQueryPlan={generateQueryPlan}
                       regenerateResponseTable={regenerateResponseTable}
-                      selectedTables={selectedTables}
-                      onTablesChange={setSelectedTables}
-                      tableRefreshTrigger={tableRefreshTrigger}
-                      generateResponseTable={generateResponseTable}
+                      regenerationError={regenerationError}
                     />
                   </div>
                 ) : isGeneratingResponseTable ? (
                   <div className="flex justify-center items-center h-full">
                     <LoadingAnimation />
+                  </div>
+                ) : initialGenerationError ? (
+                  <div className="flex flex-col items-center justify-center h-full max-w-4xl mx-auto animate-fadeInUp">
+                    <div className="w-full max-w-2xl space-y-6">
+                      <HeroSection />
+                      <div className="bg-red-50 border border-red-200 rounded-2xl p-6 shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 bg-red-100 rounded-xl">
+                            <ExclamationCircleOutlined className="text-red-600 text-lg" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-red-800 mb-2">
+                              Query Generation Failed
+                            </h3>
+                            <p className="text-red-700 mb-4">
+                              {initialGenerationError}
+                            </p>
+                            <div className="flex gap-2">
+                              <Button
+                                type="primary"
+                                icon={<ReloadOutlined />}
+                                onClick={() => {
+                                  setInitialGenerationError(null);
+                                }}
+                                className="rounded-xl"
+                                style={{
+                                  background: 'linear-gradient(135deg, #FF9129 0%, #CC5500 100%)',
+                                  borderColor: 'transparent'
+                                }}
+                              >
+                                Try Again
+                              </Button>
+                              <Button
+                                onClick={() => setInitialGenerationError(null)}
+                                className="rounded-xl"
+                              >
+                                Dismiss
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full max-w-6xl mx-auto animate-fadeInUp">

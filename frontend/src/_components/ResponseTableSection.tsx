@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Button, Tooltip, Input } from 'antd';
+import { Table, Button, Tooltip, Input, Alert } from 'antd';
 import { RiLoopLeftFill } from "react-icons/ri";
 import { LuSearchCode } from "react-icons/lu";
 import { FaPlay } from "react-icons/fa";
@@ -8,6 +8,7 @@ import SQLEditor from './SQLEditor';
 import { TfiClose } from "react-icons/tfi";
 import { IoCopy } from "react-icons/io5";
 import { FiDownload } from "react-icons/fi";
+import { ExclamationCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 
 const { TextArea } = Input;
 
@@ -18,11 +19,12 @@ interface ResponseTableSectionProps {
         table: any[];
         execution_time: number;
     };
-    regenerateResponseTable: (prompt: string, query: string) => void;
+    regenerateResponseTable: (prompt: string, query: string) => Promise<any>;
     generateQueryPlan: (query: string) => void;
     setPromptData: React.Dispatch<React.SetStateAction<any>>;
     isRegeneratingResponseTable: boolean;
     isGeneratingQueryPlan: boolean;
+    regenerationError?: string | null;
 }
 
 export default function ResponseTableSection({
@@ -31,7 +33,8 @@ export default function ResponseTableSection({
     regenerateResponseTable,
     isRegeneratingResponseTable,
     isGeneratingQueryPlan,
-    generateQueryPlan
+    generateQueryPlan,
+    regenerationError: externalRegenerationError
 }: ResponseTableSectionProps) {
     // Extract columns dynamically from table data
     const columns = promptData.table.length > 0
@@ -48,23 +51,46 @@ export default function ResponseTableSection({
     const [isRunningQuery, setIsRunningQuery] = React.useState(false);
     const [editablePrompt, setEditablePrompt] = React.useState(promptData.prompt);
     const [isPromptFocused, setIsPromptFocused] = React.useState(false);
+    const [queryError, setQueryError] = React.useState<string | null>(null);
+    const [regenerationError, setRegenerationError] = React.useState<string | null>(null);
+    const [hasUserEditedQuery, setHasUserEditedQuery] = React.useState(false);
+    const [hasUserEditedPrompt, setHasUserEditedPrompt] = React.useState(false);
 
-    // Update inputQuery when promptData.query changes (after regeneration)
+    // Update inputQuery when promptData.query changes (after regeneration), but only if user hasn't edited it
     React.useEffect(() => {
-        setInputQuery(promptData.query);
-    }, [promptData.query]);
+        if (!hasUserEditedQuery) {
+            setInputQuery(promptData.query);
+        }
+    }, [promptData.query, hasUserEditedQuery]);
 
-    // Update editablePrompt when promptData.prompt changes (after regeneration)
+    // Update editablePrompt when promptData.prompt changes (after regeneration), but only if user hasn't edited it
     React.useEffect(() => {
-        setEditablePrompt(promptData.prompt);
-    }, [promptData.prompt]);
+        if (!hasUserEditedPrompt) {
+            setEditablePrompt(promptData.prompt);
+        }
+    }, [promptData.prompt, hasUserEditedPrompt]);
+
+    // Reset edit flags when promptData changes from external source (new query loaded)
+    React.useEffect(() => {
+        // This ensures when a completely new promptData is loaded, we reset the edit flags
+        setHasUserEditedQuery(false);
+        setHasUserEditedPrompt(false);
+        setQueryError(null);
+        setRegenerationError(null);
+    }, [promptData.prompt, promptData.query]); // Dependency on both to detect new data
 
     const handleQueryChange = (value: string) => {
         setInputQuery(value);
+        setHasUserEditedQuery(true);
+        // Clear query error when user starts editing
+        if (queryError) {
+            setQueryError(null);
+        }
     }
 
     const runInputQuery = () => {
         setIsRunningQuery(true);
+        setQueryError(null);
         axios.post('/api/generate-input-query-response-table', { query: inputQuery })
             .then((response) => {
                 setPromptData({
@@ -72,13 +98,18 @@ export default function ResponseTableSection({
                     query: inputQuery,
                     table: response.data.table,
                     execution_time: response.data.execution_time
-                })
+                });
                 setIsRunningQuery(false);
+                setQueryError(null);
+                // Reset the user edit flags since we successfully ran the query
+                setHasUserEditedQuery(false);
             })
-            .catch(() => {
+            .catch((error) => {
                 setIsRunningQuery(false);
-            }
-            )
+                const errorMessage = error.response?.data?.detail || error.message || 'Failed to execute query';
+                setQueryError(errorMessage);
+                console.error('Query execution error:', error);
+            })
     }
 
     const [chartConfig, setChartConfig] = React.useState(null);
@@ -104,14 +135,37 @@ export default function ResponseTableSection({
 
     const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setEditablePrompt(e.target.value);
+        setHasUserEditedPrompt(true);
+        // Clear regeneration error when user starts editing
+        if (regenerationError) {
+            setRegenerationError(null);
+        }
     };
 
-    const regenerateWithUpdatedPrompt = () => {
-        regenerateResponseTable(editablePrompt, inputQuery);
+    const resetToOriginal = () => {
+        setInputQuery(promptData.query);
+        setEditablePrompt(promptData.prompt);
+        setHasUserEditedQuery(false);
+        setHasUserEditedPrompt(false);
+        setQueryError(null);
+        setRegenerationError(null);
+    };
+
+    const regenerateWithUpdatedPrompt = async () => {
+        setRegenerationError(null);
+        try {
+            const result = await regenerateResponseTable(editablePrompt, inputQuery);
+            // Reset the user edit flags since we successfully regenerated
+            setHasUserEditedPrompt(false);
+            setHasUserEditedQuery(false);
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.detail || error.message || 'Failed to regenerate response table';
+            setRegenerationError(errorMessage);
+            console.error('Regeneration error:', error);
+        }
     };
 
     const exportToCSV = () => {
-        if (promptData.table.length === 0) return;
 
         // Get headers from the first row
         const headers = Object.keys(promptData.table[0]);
@@ -164,6 +218,15 @@ export default function ResponseTableSection({
                         </div>
 
                         <div className="flex items-center gap-2">
+                            {(hasUserEditedQuery || hasUserEditedPrompt) && (
+                                <Tooltip title="Reset to original values">
+                                    <Button
+                                        icon={<ReloadOutlined />}
+                                        onClick={resetToOriginal}
+                                        className="flex-shrink-0 w-10 h-10 rounded-xl border-2 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200"
+                                    />
+                                </Tooltip>
+                            )}
                             <Tooltip title="Close current and start new query">
                                 <Button
                                     icon={<TfiClose />}
@@ -234,7 +297,17 @@ export default function ResponseTableSection({
 
                             <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 border border-gray-200 rounded-2xl p-4 mb-4">
                                 <div className="mb-3">
-                                    <span className="text-sm font-medium text-gray-700 mb-2 block">Original Prompt:</span>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm font-medium text-gray-700">Original Prompt:</span>
+                                        {hasUserEditedPrompt && (
+                                            <span className="px-2 py-1 text-xs rounded-lg" style={{
+                                                backgroundColor: '#FFE5CC',
+                                                color: '#CC5500'
+                                            }}>
+                                                Modified
+                                            </span>
+                                        )}
+                                    </div>
                                     <div
                                         className={`
                                             relative border-2 rounded-xl transition-all duration-300
@@ -277,6 +350,14 @@ export default function ResponseTableSection({
 
                             <div className="relative bg-gray-50/50 border border-gray-200 rounded-2xl overflow-hidden">
                                 <div className="absolute top-3 right-3 z-10 flex gap-2">
+                                    {hasUserEditedQuery && (
+                                        <span className="px-2 py-1 text-xs rounded-lg mr-2 self-center" style={{
+                                            backgroundColor: '#FFE5CC',
+                                            color: '#CC5500'
+                                        }}>
+                                            Modified
+                                        </span>
+                                    )}
                                     <Tooltip title="Run query">
                                         <Button
                                             icon={<FaPlay />}
@@ -300,8 +381,90 @@ export default function ResponseTableSection({
                                         />
                                     </Tooltip>
                                 </div>
-                                <SQLEditor value={inputQuery} onChange={handleQueryChange} />
+                                <SQLEditor value={inputQuery} onChange={handleQueryChange} editable={true} />
                             </div>
+
+                            {/* Query Error Display */}
+                            {queryError && (
+                                <Alert
+                                    message="Query Execution Failed"
+                                    description={
+                                        <div className="space-y-3">
+                                            <div className="text-sm text-gray-700">
+                                                <strong>Error:</strong> {queryError}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    size="small"
+                                                    icon={<ReloadOutlined />}
+                                                    onClick={runInputQuery}
+                                                    loading={isRunningQuery}
+                                                    className="rounded-lg"
+                                                    style={{
+                                                        backgroundColor: '#FFE5CC',
+                                                        borderColor: '#FFB366',
+                                                        color: '#FF9129'
+                                                    }}
+                                                >
+                                                    Retry Query
+                                                </Button>
+                                                <Button
+                                                    size="small"
+                                                    onClick={() => setQueryError(null)}
+                                                    className="rounded-lg"
+                                                >
+                                                    Dismiss
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    }
+                                    type="error"
+                                    showIcon
+                                    icon={<ExclamationCircleOutlined />}
+                                    className="rounded-2xl border-red-200"
+                                />
+                            )}
+
+                            {/* Regeneration Error Display */}
+                            {(regenerationError || externalRegenerationError) && (
+                                <Alert
+                                    message="Regeneration Failed"
+                                    description={
+                                        <div className="space-y-3">
+                                            <div className="text-sm text-gray-700">
+                                                <strong>Error:</strong> {regenerationError || externalRegenerationError}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    size="small"
+                                                    icon={<ReloadOutlined />}
+                                                    onClick={regenerateWithUpdatedPrompt}
+                                                    loading={isRegeneratingResponseTable}
+                                                    className="rounded-lg"
+                                                    style={{
+                                                        backgroundColor: '#FFE5CC',
+                                                        borderColor: '#FFB366',
+                                                        color: '#FF9129'
+                                                    }}
+                                                >
+                                                    Retry Regeneration
+                                                </Button>
+                                                <Button
+                                                    size="small"
+                                                    onClick={() => setRegenerationError(null)}
+                                                    className="rounded-lg"
+                                                >
+                                                    Dismiss
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    }
+                                    type="error"
+                                    showIcon
+                                    icon={<ExclamationCircleOutlined />}
+                                    className="rounded-2xl border-red-200"
+                                />
+                            )}
                         </div>
 
                         {/* Query Results */}

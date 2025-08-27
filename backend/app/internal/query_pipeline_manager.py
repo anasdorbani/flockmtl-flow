@@ -423,21 +423,27 @@ class QueryPipelineManager:
                 return f"SELECT '{error_msg}' AS error_message;"
 
             # Check if response has choices
-            if not hasattr(response, 'choices') or not response.choices:
+            if not hasattr(response, "choices") or not response.choices:
                 error_msg = "OpenAI API response has no choices"
                 logger.error(error_msg)
                 self.debug_info["last_execution_error"] = error_msg
                 return f"SELECT '{error_msg}' AS error_message;"
 
             # Check if first choice has message
-            if not hasattr(response.choices[0], 'message') or response.choices[0].message is None:
+            if (
+                not hasattr(response.choices[0], "message")
+                or response.choices[0].message is None
+            ):
                 error_msg = "OpenAI API response choice has no message"
                 logger.error(error_msg)
                 self.debug_info["last_execution_error"] = error_msg
                 return f"SELECT '{error_msg}' AS error_message;"
 
             # Check if message has content
-            if not hasattr(response.choices[0].message, 'content') or response.choices[0].message.content is None:
+            if (
+                not hasattr(response.choices[0].message, "content")
+                or response.choices[0].message.content is None
+            ):
                 error_msg = "OpenAI API response message has no content"
                 logger.error(error_msg)
                 self.debug_info["last_execution_error"] = error_msg
@@ -645,7 +651,64 @@ class QueryPipelineManager:
 
             self.log_debug("SQL_EXECUTION_ERROR", error_details)
 
-            raise e
+            # Create a more user-friendly error message
+            user_friendly_error = self._create_user_friendly_error_message(
+                error_msg, error_type, is_timeout_error, is_flockmtl_error
+            )
+
+            # Create a new exception with the user-friendly message
+            raise Exception(user_friendly_error)
+
+    def _create_user_friendly_error_message(
+        self, original_error: str, error_type: str, is_timeout: bool, is_flockmtl: bool
+    ) -> str:
+        """Create a user-friendly error message from the original database error."""
+        original_lower = original_error.lower()
+
+        if is_timeout:
+            return "Query execution timed out. The query may be too complex or accessing large datasets. Try simplifying your query or selecting fewer columns."
+
+        if is_flockmtl:
+            return f"FlockMTL AI function error: {original_error}. This might be due to API limits or model availability."
+
+        # Common SQL errors
+        if "syntax error" in original_lower:
+            return f"SQL syntax error in the generated query. The AI may have generated invalid SQL: {original_error}"
+
+        if (
+            "no such table" in original_lower
+            or "table" in original_lower
+            and "does not exist" in original_lower
+        ):
+            return "One or more tables referenced in the query don't exist. Please check that you've selected the correct tables and that your data has been properly uploaded."
+
+        if (
+            "no such column" in original_lower
+            or "column" in original_lower
+            and "does not exist" in original_lower
+        ):
+            return "One or more columns referenced in the query don't exist. The AI may have assumed columns that aren't in your data."
+
+        if (
+            "permission denied" in original_lower
+            or "access" in original_lower
+            and "denied" in original_lower
+        ):
+            return "Permission denied. You don't have access to execute this query or access the requested tables."
+
+        if "connection" in original_lower and (
+            "refused" in original_lower or "failed" in original_lower
+        ):
+            return "Database connection failed. Please check your database connection and try again."
+
+        if "memory" in original_lower or "out of" in original_lower:
+            return "Query requires too much memory. Try limiting your results with LIMIT clause or selecting fewer columns."
+
+        if "type mismatch" in original_lower or "type error" in original_lower:
+            return "Data type mismatch in the query. The operation may be incompatible with the data types in your tables."
+
+        # If none of the patterns match, return a generic friendly message with the original error
+        return f"Query execution failed: {original_error}. Please check your query and data, then try again."
 
     def generate_response_table(self, prompt: str, selected_tables: list[str] = None):
         """
@@ -694,12 +757,16 @@ class QueryPipelineManager:
             execution_debug = debug_info.get("last_execution_error") or {}
 
             # Enhanced error message based on error type
-            if isinstance(execution_debug, dict) and execution_debug.get("is_timeout_error"):
+            if isinstance(execution_debug, dict) and execution_debug.get(
+                "is_timeout_error"
+            ):
                 user_friendly_error = (
                     "The query execution timed out. This might happen with complex AI operations. "
                     "Try simplifying your request or try again."
                 )
-            elif isinstance(execution_debug, dict) and execution_debug.get("is_flockmtl_error"):
+            elif isinstance(execution_debug, dict) and execution_debug.get(
+                "is_flockmtl_error"
+            ):
                 user_friendly_error = (
                     "FlockMTL function execution failed. Please check if your OpenAI API key is configured correctly "
                     "and you have sufficient API quota."
@@ -718,13 +785,17 @@ class QueryPipelineManager:
                     "last_generated_query", "Query generation failed"
                 ),
                 "table": [{"error": user_friendly_error}],
-                "execution_time": execution_debug.get("execution_time_seconds", 0) if isinstance(execution_debug, dict) else 0,
+                "execution_time": execution_debug.get("execution_time_seconds", 0)
+                if isinstance(execution_debug, dict)
+                else 0,
                 "selected_tables": selected_tables or [],
                 "debug_info": debug_info,
                 "error": {
                     "message": user_friendly_error,
                     "technical_details": error_msg,
-                    "error_type": execution_debug.get("error_type", type(e).__name__) if isinstance(execution_debug, dict) else type(e).__name__,
+                    "error_type": execution_debug.get("error_type", type(e).__name__)
+                    if isinstance(execution_debug, dict)
+                    else type(e).__name__,
                 },
             }
 
