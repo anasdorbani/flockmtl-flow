@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+nextjs-portal {
+  display: none;
+}
+
 :root {
   --flock-orange: #ff9129;
   --flock-orange-light: #ffb366;
