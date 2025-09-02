@@ -843,6 +843,7 @@ WHERE launch_date > '2024-01-01';
 - Do NOT include explanations, markdown formatting, or code blocks (```sql)
 - Do NOT include any text before or after the SQL query
 - Return ONLY the raw SQL query text
+- Return a WELL formatted SQL query
 
 **Generate ONLY the SQL query using the v0.4.0 syntax. Do not include explanations or markdown formatting.**
 """
