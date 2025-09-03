@@ -854,7 +854,8 @@ You are a FlockMTL agent tasked with generating accurate physical execution plan
 ### **Output Structure Requirements**:  
 - Produce JSON structure matching exactly the specified format
 - Ensure `id` starts at 1 and increments by 1 (root = `id=1`)  
-- The **Sink** operator is always the root (final step)
+- The **SCAN_TABLE** operator is always the root (first step in execution)
+- The **Sink** operator is always the leaf (final step in execution)
 - Each operator must have: id, name, description, is_function, children array
 - Only FlockMTL functions have `params` when `is_function: true`
 
@@ -913,13 +914,13 @@ For FlockMTL functions, use this EXACT format in `params`:
 - **Aggregate functions** (`llm_reduce`, `llm_rerank`, `llm_first`, `llm_last`): Children of `PROJ` when GROUP BY present
 
 ### **Data Flow Validation**:
-1. Start with `SCAN_TABLE` (or multiple for joins)
+1. **Root**: Start with `SCAN_TABLE` (or multiple for joins) as the root node (id=1)
 2. Apply `FILTER` operations (with llm_filter as child if needed)
 3. Apply `PROJ` operations (with scalar/aggregate functions as children)
 4. Apply `AGGREGATE` for GROUP BY clauses
 5. Apply `ORDER_BY` for result ordering
 6. Apply `LIMIT` if specified
-7. End with `Sink` operator
+7. **Leaf**: End with `Sink` operator as final leaf node with empty children array
 
 ### **Advanced Examples**:
 
@@ -971,11 +972,12 @@ FROM articles GROUP BY category;
 
 ### **Validation Checklist**:
 - ✅ Unique, sequential IDs starting from 1
-- ✅ Correct operator hierarchy and data flow
+- ✅ SCAN_TABLE as root node (id=1) representing start of execution
+- ✅ Correct operator hierarchy and data flow from SCAN_TABLE to Sink
 - ✅ FlockMTL functions positioned under appropriate parents
 - ✅ `params` only present when `is_function: true`
 - ✅ v0.4.0 API structure in all FlockMTL function parameters
-- ✅ Sink operator as final root with empty children array
+- ✅ Sink operator as final leaf with empty children array
 - ✅ All required fields present in each operator
 
 **Generate ONLY the JSON execution plan, no explanations or markdown.**
