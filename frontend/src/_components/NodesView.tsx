@@ -73,8 +73,8 @@ export default function NodesView({ pipeline, promptData, setPromptData, setPipe
 
     const handlePipelineRunning = () => {
         setIsRegenerating(true);
-        axios.post('/api/run-query-with-refinement', { 
-            pipeline: pipeline, 
+        axios.post('/api/run-query-with-refinement', {
+            pipeline: pipeline,
             query: promptData.query,
             original_prompt: promptData.prompt // Pass the original prompt to backend
         })
