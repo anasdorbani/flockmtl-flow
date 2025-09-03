@@ -29,6 +29,7 @@ class RegenerateResponseTableRequest(BaseModel):
 class RunQueryWithRefinementRequest(BaseModel):
     query: str
     pipeline: Any
+    original_prompt: str = ""  # Add original_prompt field
 
 
 class GenerateInputQueryResponseTableRequest(BaseModel):
@@ -98,7 +99,7 @@ async def run_query_with_refinement(request: RunQueryWithRefinementRequest) -> A
     try:
         logger.info(f"Running query with refinement: {request.query[:100]}...")
         result = query_pipeline_manager.run_pipeline_with_refinement(
-            request.query, request.pipeline
+            request.query, request.pipeline, request.original_prompt
         )
         logger.info("Query with refinement executed successfully")
         return result

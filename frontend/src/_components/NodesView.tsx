@@ -73,16 +73,22 @@ export default function NodesView({ pipeline, promptData, setPromptData, setPipe
 
     const handlePipelineRunning = () => {
         setIsRegenerating(true);
-        axios.post('/api/run-query-with-refinement', { pipeline: pipeline, query: promptData.query })
+        axios.post('/api/run-query-with-refinement', { 
+            pipeline: pipeline, 
+            query: promptData.query,
+            original_prompt: promptData.prompt // Pass the original prompt to backend
+        })
             .then((response) => {
-                setPromptData({
+                const updatedPromptData = {
                     ...promptData,
+                    prompt: response.data.prompt || promptData.prompt, // Use response prompt or fallback to current
                     table: response.data.table,
                     execution_time: response.data.execution_time,
                     query: response.data.query
-                });
+                };
+                setPromptData(updatedPromptData);
                 setPipeline(response.data.pipeline);
-                const { Nodes, Edges } = BuildNodesAndEdges(response.data, response.data.pipeline, handleInputChange);
+                const { Nodes, Edges } = BuildNodesAndEdges(updatedPromptData, response.data.pipeline, handleInputChange);
                 setNodes(Nodes);
                 setEdges(Edges);
                 setFlowKey(prevKey => prevKey + 1); // Force ReactFlow to re-render

@@ -877,7 +877,7 @@ class QueryPipelineManager:
 
         return response.choices[0].message.content
 
-    def run_pipeline_with_refinement(self, query: str, pipeline: dict):
+    def run_pipeline_with_refinement(self, query: str, pipeline: dict, original_prompt: str = ""):
         """
         Runs the pipeline by refining the query based on the pipeline and re-executing it.
         """
@@ -888,6 +888,7 @@ class QueryPipelineManager:
 
         new_pipeline = self.generate_pipeline_for_query(new_query)
         return {
+            "prompt": original_prompt,  # Include the original prompt in response
             "query": new_query,
             "table": table,
             "execution_time": round(time_end - time_start),

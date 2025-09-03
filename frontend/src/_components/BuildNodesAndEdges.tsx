@@ -73,14 +73,14 @@ export function BuildNodesAndEdges(promptData: { prompt: string, query: string, 
   const initialOperator: Operator = {
     id: -1,
     name: "User Prompt",
-    description: promptData.prompt,
+    description: promptData.prompt || "", // Ensure we have a fallback
     is_function: false,
     params: {},
     children: [
       {
         id: 0,
         name: "Query",
-        description: promptData.query,
+        description: promptData.query || "", // Ensure we have a fallback
         is_function: false,
         params: {},
         children: [pipeline],
